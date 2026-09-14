@@ -11,7 +11,7 @@ import {
 } from './components/SidebarFilter';
 import { FrontendItem, OSFirmwareItem, ProjectStatus, ItemRatings } from './types';
 import { useCatalog } from './hooks/useCatalog';
-import { SlidersHorizontal, Search, RotateCcw, ChevronDown, Database } from 'lucide-react';
+import { SlidersHorizontal, Search, RotateCcw, ChevronDown, Database, PlusCircle, Layers } from 'lucide-react';
 import EditPage from './app/edit/page';
 import { useAllRatingStats } from './hooks/useItemCommunity';
 
@@ -368,8 +368,28 @@ export default function App() {
               </div>
             </div>
 
-            {/* Empty State when no results match */}
-            {totalFilteredCount === 0 ? (
+            {/* Empty State: either catalog is empty or filters matched 0 */}
+            {totalCountForTab === 0 ? (
+              <div className="w-full rounded-[24px] border border-dashed border-[#e5e5e5] bg-[#ffffff] p-12 text-center flex flex-col items-center justify-center gap-3 shadow-2xs">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#f5f5f5] text-[#737373]">
+                  <Layers size={22} />
+                </div>
+                <h3 className="text-[16px] font-semibold text-[#0a0a0a]">
+                  등록된 아이템이 없습니다
+                </h3>
+                <p className="text-[13px] text-[#737373] max-w-sm">
+                  카탈로그가 비어 있습니다. 웹 에디터에서 새로운 프론트엔드를 추가하거나 데이터베이스에 등록해 보세요.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => navigate('/edit')}
+                  className="mt-2 inline-flex items-center gap-1.5 rounded-[18px] bg-[#0a0a0a] px-4 py-2 text-[13px] font-medium text-[#fafafa] hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+                >
+                  <PlusCircle size={14} />
+                  <span>+ 새 아이템 등록하기</span>
+                </button>
+              </div>
+            ) : totalFilteredCount === 0 ? (
               <div className="w-full rounded-[24px] border border-dashed border-[#e5e5e5] bg-[#ffffff] p-12 text-center flex flex-col items-center justify-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#f5f5f5] text-[#737373]">
                   <Search size={22} />
