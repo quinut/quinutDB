@@ -1,0 +1,26 @@
+name: Deploy QuinutDB
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Server via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            export PATH=$PATH:/usr/local/bin
+            cd /home/ubuntu/quinutDB
+            git fetch origin main
+            git reset --hard origin/main
+            npm install
+            npm run build
+            pm2 restart quinutdb
