@@ -298,7 +298,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
                   <img
                     src={galleryImages[activeScreenshotIdx] || galleryImages[0]}
                     alt={`${item.name} screenshot ${activeScreenshotIdx + 1}`}
-                    className="h-full w-full object-contain select-none transition-opacity duration-200"
+                    className="h-full w-full object-contain rounded-xl select-none transition-opacity duration-200"
                   />
                 ) : (
                   <div className="flex flex-col items-center justify-center gap-2 text-[#737373] p-6 text-center">
@@ -359,7 +359,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
                         <img
                           src={imgUrl}
                           alt={`Thumbnail ${idx + 1}`}
-                          className="h-full w-full object-cover"
+                          className="h-full w-full object-cover rounded-lg"
                         />
                       </button>
                     );
