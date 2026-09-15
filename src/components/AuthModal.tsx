@@ -102,7 +102,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           </div>
           <p className="text-[13px] text-[#737373] leading-relaxed">
             {reasonMessage ||
-              '로그인하면 3대 평가 항목(대중성, 편의성, 활성도)에 직접 투표하고 생생한 리뷰를 남길 수 있습니다.'}
+              '로그인하면 커뮤니티 별점 평가와 생생한 리뷰를 남길 수 있습니다.'}
           </p>
         </div>
 

@@ -37,7 +37,7 @@ const getAdoptionDesc = (score: number, lang: 'ko' | 'en') => {
   }
   switch (score) {
     case 5: return '사실상 표준';
-    case 4: return '높은 대중성';
+    case 4: return '높은 인지도';
     case 3: return '안정적 생태계';
     case 2: return '성장 및 틈새';
     default: return '소수 및 신생';

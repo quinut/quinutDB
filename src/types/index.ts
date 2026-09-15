@@ -21,7 +21,7 @@ export type ThemeSupportLevel = 'Rich' | 'Basic' | 'None';
 export type ScoreValue = 1 | 2 | 3 | 4 | 5;
 
 export interface ItemRatings {
-  adoption: ScoreValue;  // 대중성 & 생태계 규모 (1: 소수/신생 ~ 5: 사실상 표준)
+  adoption: ScoreValue;  // 인지도 & 생태계 규모 (1: 소수/신생 ~ 5: 사실상 표준)
   easeOfUse: ScoreValue; // 설정 난이도 & 편의성 (1: CLI/수동설정 ~ 5: 원클릭 완벽)
   activity: ScoreValue;  // 업데이트 활성도 (1: 방치/EOL ~ 5: 활발한 유지보수)
 }

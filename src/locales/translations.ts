@@ -68,8 +68,8 @@ export const translations = {
     filter: {
       pricingTitle: '가격 정책',
       ratingsTitle: '큐레이션 점수',
-      adoptionLabel: '대중성',
-      easeOfUseLabel: '설정 편의성',
+      adoptionLabel: '인지도',
+      easeOfUseLabel: '편의성',
       platformsTitle: '지원 플랫폼',
       frontendFeaturesTitle: '프론트엔드 기능',
       categoryTitle: '기기 카테고리',
@@ -78,13 +78,13 @@ export const translations = {
       showResults: '결과 {count}개 보기',
     },
     ratings: {
-      adoption: '대중성 및 생태계',
-      easeOfUse: '설정 편의성',
-      activity: '업데이트 활성도',
+      adoption: '인지도',
+      easeOfUse: '편의성',
+      activity: '활성도',
       scoreLabels: {
         adoption: {
           5: '사실상 표준',
-          4: '높은 대중성',
+          4: '높은 인지도',
           3: '안정적 생태계',
           2: '성장 및 틈새',
           1: '소수 및 신생',

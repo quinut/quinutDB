@@ -202,7 +202,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, type, communityStats, 
               </span>
               <div className="flex items-center gap-1.5 text-[11px]">
                 <span className="inline-flex items-center">
-                  <span className="text-[#a3a3a3] text-[10px] mr-0.5">{language === 'ko' ? '대중' : 'Pop'}</span>
+                  <span className="text-[#a3a3a3] text-[10px] mr-0.5">{language === 'ko' ? '인지' : 'Pop'}</span>
                   <span className="font-semibold text-[#fafafa]">{qAdoption}</span>
                 </span>
                 <span className="text-[#525252] text-[9px] leading-none">·</span>

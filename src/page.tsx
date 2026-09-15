@@ -350,7 +350,7 @@ export default function App() {
                     aria-label="Sort options"
                     className="appearance-none rounded-[18px] border border-[#e5e5e5] bg-[#fafafa] py-1 pl-3 pr-8 text-[12px] font-medium text-[#0a0a0a] hover:border-[#737373] focus:border-[#0a0a0a] focus:outline-none cursor-pointer transition-colors"
                   >
-                    <option value="adoption-desc">{language === 'ko' ? 'qScore 대중성순' : 'qScore Adoption'}</option>
+                    <option value="adoption-desc">{language === 'ko' ? 'qScore 인지도순' : 'qScore Awareness'}</option>
                     <option value="userscore-desc">{language === 'ko' ? '유저 평점순 (userScore)' : 'User Rating (userScore)'}</option>
                     <option value="ease-desc">{language === 'ko' ? 'qScore 편의성순' : 'qScore Ease of Use'}</option>
                     <option value="activity-desc">{language === 'ko' ? 'qScore 활성도순' : 'qScore Activity'}</option>
