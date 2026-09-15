@@ -278,7 +278,6 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, type, communityStats, 
             <>
               {/* Supported Platforms */}
               <div className="flex flex-wrap items-center gap-1.5">
-                <span className="text-[11px] font-medium text-[#737373] mr-1">OS / CFW:</span>
                 {frontend.supportedPlatforms.map((platform: string) => (
                   <span
                     key={platform}
