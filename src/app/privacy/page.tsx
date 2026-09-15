@@ -272,7 +272,7 @@ export const PrivacyPage: React.FC<PrivacyPageProps> = ({ onNavigateHome }) => {
                   </div>
                 </div>
                 <a
-                  href="https://github.com/quinut"
+                  href="https://github.com/quinut/quinutDB"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[#737373] hover:text-[#0a0a0a] transition-colors"

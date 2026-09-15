@@ -226,7 +226,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigateEdit }) => {
 
           {/* GitHub Repo Button */}
           <a
-            href="https://github.com/quinut"
+            href="https://github.com/quinut/quinutDB"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="GitHub Repository"
