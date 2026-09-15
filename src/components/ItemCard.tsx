@@ -324,9 +324,6 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, type, communityStats, 
         {/* ============================================================ */}
         <div className="mt-4 pt-3 border-t border-[#e5e5e5] flex items-center justify-between">
           <div className="text-[12px] text-[#737373]">
-            {isFrontend && frontend?.themeSupport && (
-              <span>{language === 'ko' ? '테마' : 'Theme'}: <strong className="text-[#0a0a0a] font-medium">{frontend.themeSupport}</strong></span>
-            )}
             {!isFrontend && cfw?.defaultFrontend && (
               <span>{language === 'ko' ? '기본 UI' : 'Default UI'}: <strong className="text-[#0a0a0a] font-medium">{cfw.defaultFrontend}</strong></span>
             )}
