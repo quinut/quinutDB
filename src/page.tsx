@@ -9,7 +9,7 @@ import {
   initialFilterState,
   countActiveFilters,
 } from './components/SidebarFilter';
-import { FrontendItem, OSFirmwareItem, ProjectStatus, ItemRatings } from './types';
+import { FrontendItem, OSFirmwareItem, ProjectStatus } from './types';
 import { useCatalog } from './hooks/useCatalog';
 import { SlidersHorizontal, Search, RotateCcw, ChevronDown, Database, PlusCircle, Layers } from 'lucide-react';
 import EditPage from './app/edit/page';
@@ -18,9 +18,6 @@ import { useAllRatingStats } from './hooks/useItemCommunity';
 import { useLanguage } from './contexts/LanguageContext';
 
 type SortOption =
-  | 'adoption-desc'
-  | 'ease-desc'
-  | 'activity-desc'
   | 'userscore-desc'
   | 'status'
   | 'name-asc'
@@ -53,7 +50,7 @@ export default function App() {
 
   const [activeTab, setActiveTab] = useState<MainTabType>('all');
   const [filters, setFilters] = useState<FilterState>(initialFilterState);
-  const [sortBy, setSortBy] = useState<SortOption>('adoption-desc');
+  const [sortBy, setSortBy] = useState<SortOption>('name-asc');
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const {
     frontends,
@@ -94,17 +91,6 @@ export default function App() {
     // Pricing filter
     if (filters.pricing.length > 0) {
       list = list.filter((item) => filters.pricing.includes(item.pricing));
-    }
-
-    // Curation Ratings filter
-    if (filters.minAdoption > 0) {
-      list = list.filter((item) => item.ratings.adoption >= filters.minAdoption);
-    }
-    if (filters.minEaseOfUse > 0) {
-      list = list.filter((item) => item.ratings.easeOfUse >= filters.minEaseOfUse);
-    }
-    if (filters.minActivity > 0) {
-      list = list.filter((item) => item.ratings.activity >= filters.minActivity);
     }
 
     // Platform filter
@@ -152,17 +138,6 @@ export default function App() {
       list = list.filter((item) => filters.pricing.includes(item.pricing));
     }
 
-    // Curation Ratings filter
-    if (filters.minAdoption > 0) {
-      list = list.filter((item) => item.ratings.adoption >= filters.minAdoption);
-    }
-    if (filters.minEaseOfUse > 0) {
-      list = list.filter((item) => item.ratings.easeOfUse >= filters.minEaseOfUse);
-    }
-    if (filters.minActivity > 0) {
-      list = list.filter((item) => item.ratings.activity >= filters.minActivity);
-    }
-
     // Device Category filter
     if (filters.categories.length > 0) {
       list = list.filter((item) => filters.categories.includes(item.category));
@@ -172,7 +147,7 @@ export default function App() {
   }, [filters, osFirmwares]);
 
   // 3. Sorting helper
-  const sortItems = <T extends { id: string; name: string; status: ProjectStatus; ratings: ItemRatings }>(items: T[]): T[] => {
+  const sortItems = <T extends { id: string; name: string; status: ProjectStatus }>(items: T[]): T[] => {
     const sorted = [...items];
     if (sortBy === 'userscore-desc') {
       return sorted.sort((a, b) => {
@@ -185,35 +160,6 @@ export default function App() {
         const countA = statA?.totalRatings || 0;
         const countB = statB?.totalRatings || 0;
         return countB - countA;
-      });
-    }
-    if (sortBy === 'adoption-desc') {
-      return sorted.sort((a, b) => {
-        const diff = b.ratings.adoption - a.ratings.adoption;
-        if (diff !== 0) return diff;
-        const actDiff = b.ratings.activity - a.ratings.activity;
-        if (actDiff !== 0) return actDiff;
-        const easeDiff = b.ratings.easeOfUse - a.ratings.easeOfUse;
-        if (easeDiff !== 0) return easeDiff;
-        return a.name.localeCompare(b.name);
-      });
-    }
-    if (sortBy === 'ease-desc') {
-      return sorted.sort((a, b) => {
-        const diff = b.ratings.easeOfUse - a.ratings.easeOfUse;
-        if (diff !== 0) return diff;
-        const adoptDiff = b.ratings.adoption - a.ratings.adoption;
-        if (adoptDiff !== 0) return adoptDiff;
-        return a.name.localeCompare(b.name);
-      });
-    }
-    if (sortBy === 'activity-desc') {
-      return sorted.sort((a, b) => {
-        const diff = b.ratings.activity - a.ratings.activity;
-        if (diff !== 0) return diff;
-        const adoptDiff = b.ratings.adoption - a.ratings.adoption;
-        if (adoptDiff !== 0) return adoptDiff;
-        return a.name.localeCompare(b.name);
       });
     }
     if (sortBy === 'name-asc') {
@@ -366,12 +312,9 @@ export default function App() {
                     aria-label="Sort options"
                     className="appearance-none rounded-[18px] border border-[#e5e5e5] bg-[#fafafa] py-1 pl-3 pr-8 text-[12px] font-medium text-[#0a0a0a] hover:border-[#737373] focus:border-[#0a0a0a] focus:outline-none cursor-pointer transition-colors"
                   >
-                    <option value="adoption-desc">{language === 'ko' ? 'qScore 인지도순' : 'qScore Awareness'}</option>
-                    <option value="userscore-desc">{language === 'ko' ? '유저 평점순 (userScore)' : 'User Rating (userScore)'}</option>
-                    <option value="ease-desc">{language === 'ko' ? 'qScore 편의성순' : 'qScore Ease of Use'}</option>
-                    <option value="activity-desc">{language === 'ko' ? 'qScore 활성도순' : 'qScore Activity'}</option>
-                    <option value="status">{language === 'ko' ? '상태순 (활성 우선)' : 'Status (Active first)'}</option>
                     <option value="name-asc">{language === 'ko' ? '이름순 (오름차순)' : 'Name (A–Z)'}</option>
+                    <option value="userscore-desc">{language === 'ko' ? '유저 평점순 (userScore)' : 'User Rating (userScore)'}</option>
+                    <option value="status">{language === 'ko' ? '상태순 (활성 우선)' : 'Status (Active first)'}</option>
                     <option value="name-desc">{language === 'ko' ? '이름순 (내림차순)' : 'Name (Z–A)'}</option>
                   </select>
                   <ChevronDown
