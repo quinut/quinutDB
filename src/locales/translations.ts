@@ -3,7 +3,7 @@ export type Language = 'ko' | 'en';
 export const translations = {
   ko: {
     common: {
-      brandDesc: '에뮬레이션 프론트엔드 & 레트로 런처 오픈 디렉토리',
+      brandDesc: '당신을 위한 소프트웨어 큐레이션',
       contribute: '데이터 기여/수정',
       donate: '후원하기',
       login: '로그인',
@@ -239,7 +239,7 @@ export const translations = {
   },
   en: {
     common: {
-      brandDesc: 'Open Directory for Emulation Frontends & Retro Launchers',
+      brandDesc: 'Software Curation For You',
       contribute: 'Contribute Data',
       donate: 'Donate',
       login: 'Sign In',
