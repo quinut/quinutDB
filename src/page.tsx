@@ -102,6 +102,9 @@ export default function App() {
     if (filters.minEaseOfUse > 0) {
       list = list.filter((item) => item.ratings.easeOfUse >= filters.minEaseOfUse);
     }
+    if (filters.minActivity > 0) {
+      list = list.filter((item) => item.ratings.activity >= filters.minActivity);
+    }
 
     // Platform filter
     if (filters.platforms.length > 0) {
@@ -154,6 +157,9 @@ export default function App() {
     }
     if (filters.minEaseOfUse > 0) {
       list = list.filter((item) => item.ratings.easeOfUse >= filters.minEaseOfUse);
+    }
+    if (filters.minActivity > 0) {
+      list = list.filter((item) => item.ratings.activity >= filters.minActivity);
     }
 
     // Device Category filter

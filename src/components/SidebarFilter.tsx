@@ -9,6 +9,7 @@ export interface FilterState {
   pricing: PricingModel[];
   minAdoption: number; // 0: All, 3: 3+, 4: 4+, 5: 5
   minEaseOfUse: number; // 0: All, 3: 3+, 4: 4+, 5: 5
+  minActivity: number; // 0: All, 3: 3+, 4: 4+, 5: 5
   
   // Frontend specific
   platforms: string[];
@@ -26,6 +27,7 @@ export const initialFilterState: FilterState = {
   pricing: [],
   minAdoption: 0,
   minEaseOfUse: 0,
+  minActivity: 0,
   platforms: [],
   hasBuiltInScraper: false,
   touchOptimized: false,
@@ -40,6 +42,7 @@ export function countActiveFilters(filters: FilterState, _activeTab?: MainTabTyp
   count += filters.pricing.length;
   if (filters.minAdoption > 0) count++;
   if (filters.minEaseOfUse > 0) count++;
+  if (filters.minActivity > 0) count++;
 
   count += filters.platforms.length;
   if (filters.hasBuiltInScraper) count++;
@@ -269,6 +272,42 @@ export const SidebarFilter: React.FC<SidebarFilterProps> = ({
                   key={opt.value}
                   type="button"
                   onClick={() => onChange({ ...filters, minEaseOfUse: opt.value })}
+                  className={`rounded-[18px] py-1 text-[11px] font-medium transition-all text-center cursor-pointer ${
+                    isSelected
+                      ? 'bg-[#0a0a0a] text-[#fafafa] border border-[#0a0a0a] shadow-xs'
+                      : 'bg-[#ffffff] text-[#171717] border border-[#e5e5e5] hover:border-[#737373]'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Min Activity */}
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] text-[#737373] font-medium">{t.filter.activityLabel}</span>
+            {filters.minActivity > 0 && (
+              <span className="text-[10px] font-semibold text-[#0a0a0a]">
+                {language === 'ko' ? `${filters.minActivity}점 이상` : `${filters.minActivity}+`}
+              </span>
+            )}
+          </div>
+          <div className="grid grid-cols-4 gap-1">
+            {[
+              { label: language === 'ko' ? '전체' : 'All', value: 0 },
+              { label: language === 'ko' ? '3점+' : '3+', value: 3 },
+              { label: language === 'ko' ? '4점+' : '4+', value: 4 },
+              { label: language === 'ko' ? '5점' : '5', value: 5 },
+            ].map((opt) => {
+              const isSelected = filters.minActivity === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => onChange({ ...filters, minActivity: opt.value })}
                   className={`rounded-[18px] py-1 text-[11px] font-medium transition-all text-center cursor-pointer ${
                     isSelected
                       ? 'bg-[#0a0a0a] text-[#fafafa] border border-[#0a0a0a] shadow-xs'
