@@ -2,20 +2,20 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Coffee, PlusCircle, LogIn, LogOut, User as UserIcon, ChevronDown, ExternalLink, Globe } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { UserAvatar } from './UserAvatar';
 
 export interface HeaderProps {
   onNavigateEdit?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({ onNavigateEdit }) => {
-  const { user, profile, loading, signOut, openAuthModal } = useAuth();
+  const { user, profile, loading, signOut, openAuthModal, openOnboarding } = useAuth();
   const { language, toggleLanguage, t } = useLanguage();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const displayName = profile?.username || user?.user_metadata?.user_name || user?.email?.split('@')[0] || 'User';
+  const displayName = profile?.nickname || profile?.username || 'User';
   const displayEmail = profile?.email || user?.email || '';
-  const avatarUrl = profile?.avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.picture || '';
   const isAdmin = Boolean(profile?.is_admin);
 
   // Close dropdown on click outside
@@ -113,17 +113,12 @@ export const Header: React.FC<HeaderProps> = ({ onNavigateEdit }) => {
                 }`}
                 title="프로필 보기"
               >
-                {avatarUrl ? (
-                  <img
-                    src={avatarUrl}
-                    alt={displayName}
-                    className="h-7 w-7 rounded-full object-cover border border-[#e5e5e5] shrink-0"
-                  />
-                ) : (
-                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#0a0a0a] text-[11px] font-bold text-[#fafafa] shrink-0">
-                    {displayName.slice(0, 1).toUpperCase()}
-                  </div>
-                )}
+                <UserAvatar
+                  userId={user?.id}
+                  username={displayName}
+                  avatarUrl={profile?.avatar_url}
+                  size={28}
+                />
                 <div className="flex items-center gap-1.5">
                   <span className="text-[12px] font-medium text-[#0a0a0a] max-w-[100px] truncate">
                     {displayName}
@@ -147,17 +142,12 @@ export const Header: React.FC<HeaderProps> = ({ onNavigateEdit }) => {
                 <div className="absolute right-0 top-[calc(100%+8px)] w-[260px] rounded-[20px] border border-[#e5e5e5] bg-[#ffffff] p-4 shadow-[0_12px_32px_rgba(0,0,0,0.12)] z-50 animate-fade-in flex flex-col gap-3">
                   {/* User Card Header */}
                   <div className="flex items-center gap-3 pb-3 border-b border-[#f0f0f0]">
-                    {avatarUrl ? (
-                      <img
-                        src={avatarUrl}
-                        alt={displayName}
-                        className="h-11 w-11 rounded-full object-cover border border-[#e5e5e5] shrink-0"
-                      />
-                    ) : (
-                      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#0a0a0a] text-[16px] font-bold text-[#fafafa] shrink-0">
-                        {displayName.slice(0, 1).toUpperCase()}
-                      </div>
-                    )}
+                    <UserAvatar
+                      userId={user?.id}
+                      username={displayName}
+                      avatarUrl={profile?.avatar_url}
+                      size={42}
+                    />
                     <div className="flex flex-col min-w-0">
                       <div className="flex items-center gap-1.5">
                         <span className="text-[14px] font-semibold text-[#0a0a0a] truncate">
@@ -179,6 +169,19 @@ export const Header: React.FC<HeaderProps> = ({ onNavigateEdit }) => {
 
                   {/* Quick Info / Links */}
                   <div className="flex flex-col gap-1">
+                    {/* Change Nickname Button */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsProfileOpen(false);
+                        openOnboarding();
+                      }}
+                      className="flex items-center gap-2 rounded-[12px] px-2.5 py-2 text-[12px] font-medium text-[#0a0a0a] hover:bg-[#f5f5f5] transition-colors cursor-pointer text-left"
+                    >
+                      <UserIcon size={14} className="text-[#737373]" />
+                      <span>{language === 'ko' ? '닉네임 변경' : 'Edit Nickname'}</span>
+                    </button>
+
                     {user?.user_metadata?.user_name && (
                       <a
                         href={`https://github.com/${user.user_metadata.user_name}`}

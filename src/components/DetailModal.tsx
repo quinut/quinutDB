@@ -17,6 +17,7 @@ import { TriStateIndicator, PricingBadge, StatusIndicator } from './ItemCard';
 import { useAuth } from '../contexts/AuthContext';
 import { useItemCommunity } from '../hooks/useItemCommunity';
 import { useLanguage } from '../contexts/LanguageContext';
+import { UserAvatar } from './UserAvatar';
 
 export interface DetailModalProps {
   item: FrontendItem | OSFirmwareItem | null;
@@ -766,17 +767,12 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <div className="h-6 w-6 rounded-full overflow-hidden bg-[#e5e5e5] flex items-center justify-center text-[11px] font-semibold text-[#0a0a0a] shrink-0">
-                                {rev.avatarUrl ? (
-                                  <img
-                                    src={rev.avatarUrl}
-                                    alt={rev.username}
-                                    className="h-full w-full object-cover"
-                                  />
-                                ) : (
-                                  rev.username.slice(0, 1).toUpperCase()
-                                )}
-                              </div>
+                              <UserAvatar
+                                userId={rev.userId}
+                                username={rev.username}
+                                avatarUrl={rev.avatarUrl}
+                                size={24}
+                              />
                               <span className="text-[12px] font-semibold text-[#0a0a0a] truncate max-w-[120px]">
                                 {rev.username}
                               </span>

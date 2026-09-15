@@ -40,6 +40,7 @@ import { useCatalog } from '../../hooks/useCatalog';
 import { useAuth } from '../../contexts/AuthContext';
 import { useProposals, ItemProposal } from '../../hooks/useProposals';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { UserAvatar } from '../../components/UserAvatar';
 import { ItemCard } from '../../components/ItemCard';
 
 export interface EditPageProps {
@@ -774,19 +775,14 @@ export default function EditPage({ onNavigateHome }: EditPageProps) {
 
             {user ? (
               <div className="flex items-center gap-1.5 p-0.5 pr-2.5 rounded-[18px] border border-[#e5e5e5] bg-[#fafafa]">
-                {profile?.avatar_url ? (
-                  <img
-                    src={profile.avatar_url}
-                    alt={profile?.username || 'User'}
-                    className="h-6 w-6 rounded-full object-cover border border-[#e5e5e5]"
-                  />
-                ) : (
-                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#0a0a0a] text-[10px] font-bold text-[#fafafa]">
-                    {(profile?.username || user.email || 'U').slice(0, 1).toUpperCase()}
-                  </div>
-                )}
+                <UserAvatar
+                  userId={user.id}
+                  username={profile?.nickname || profile?.username}
+                  avatarUrl={profile?.avatar_url}
+                  size={24}
+                />
                 <span className="text-[12px] font-medium text-[#0a0a0a] max-w-[90px] truncate hidden sm:inline">
-                  {profile?.username || user.user_metadata?.user_name || 'User'}
+                  {profile?.nickname || profile?.username || 'User'}
                 </span>
                 {isAdmin && (
                   <span className="rounded-[6px] bg-[#0a0a0a] px-1.5 py-0.2 text-[8px] font-bold text-[#fafafa]">

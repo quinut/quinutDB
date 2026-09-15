@@ -146,6 +146,7 @@ export function useItemCommunity(itemId: string) {
           updated_at,
           profiles (
             username,
+            nickname,
             avatar_url
           )
         `)
@@ -161,7 +162,7 @@ export function useItemCommunity(itemId: string) {
           content: r.content || '',
           createdAt: r.created_at,
           updatedAt: r.updated_at,
-          username: r.profiles?.username || '익명 유저',
+          username: r.profiles?.nickname || r.profiles?.username || '익명 유저',
           avatarUrl: r.profiles?.avatar_url || '',
         }));
         setReviews(formatted);

@@ -13,14 +13,25 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   onClose,
   reasonMessage,
 }) => {
-  const { signInWithGithub, signInWithEmail, isConfigured } = useAuth();
+  const { signInWithGoogle, signInWithGithub, signInWithEmail, isConfigured } = useAuth();
   const [email, setEmail] = useState('');
+  const [loadingGoogle, setLoadingGoogle] = useState(false);
   const [loadingGithub, setLoadingGithub] = useState(false);
   const [loadingEmail, setLoadingEmail] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   if (!isOpen) return null;
+
+  const handleGoogleLogin = async () => {
+    setErrorMessage(null);
+    setLoadingGoogle(true);
+    const { error } = await signInWithGoogle();
+    if (error) {
+      setErrorMessage(error.message || 'Google 로그인 중 오류가 발생했습니다.');
+      setLoadingGoogle(false);
+    }
+  };
 
   const handleGithubLogin = async () => {
     setErrorMessage(null);
@@ -125,12 +136,45 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </button>
           </div>
         ) : (
-          <div className="flex flex-col gap-4">
-            {/* 1. GitHub One-Click Login */}
+          <div className="flex flex-col gap-3">
+            {/* 1. Google Login (Privacy-preserving: openid email only, no profile/picture) */}
+            <button
+              type="button"
+              onClick={handleGoogleLogin}
+              disabled={loadingGoogle || loadingGithub || loadingEmail}
+              className="inline-flex h-[42px] w-full items-center justify-center gap-2.5 rounded-[18px] border border-[#e5e5e5] bg-[#ffffff] px-4 text-[13px] font-medium text-[#0a0a0a] transition-all hover:bg-[#f5f5f5] disabled:opacity-50 cursor-pointer shadow-xs"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                className="shrink-0"
+              >
+                <path
+                  fill="#4285F4"
+                  d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
+                />
+                <path
+                  fill="#34A853"
+                  d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.35 24 12 24z"
+                />
+                <path
+                  fill="#FBBC05"
+                  d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"
+                />
+                <path
+                  fill="#EA4335"
+                  d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.35 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
+                />
+              </svg>
+              <span>{loadingGoogle ? 'Google 연결 중...' : 'Google 계정으로 계속하기'}</span>
+            </button>
+
+            {/* 2. GitHub One-Click Login */}
             <button
               type="button"
               onClick={handleGithubLogin}
-              disabled={loadingGithub}
+              disabled={loadingGoogle || loadingGithub || loadingEmail}
               className="inline-flex h-[42px] w-full items-center justify-center gap-2.5 rounded-[18px] bg-[#0a0a0a] px-4 text-[13px] font-medium text-[#fafafa] transition-opacity hover:opacity-90 disabled:opacity-50 cursor-pointer shadow-xs"
             >
               <svg
@@ -150,7 +194,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </button>
 
             {/* Divider */}
-            <div className="relative flex items-center justify-center my-1">
+            <div className="relative flex items-center justify-center my-0.5">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-[#e5e5e5]" />
               </div>
@@ -159,7 +203,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               </span>
             </div>
 
-            {/* 2. Email Magic Link Form */}
+            {/* 3. Email Magic Link Form */}
             <form onSubmit={handleEmailLogin} className="flex flex-col gap-2.5">
               <div className="relative flex items-center">
                 <Mail size={15} className="absolute left-3.5 text-[#737373] pointer-events-none" />
@@ -184,9 +228,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           </div>
         )}
 
-        {/* Footer info */}
-        <div className="mt-6 pt-4 border-t border-[#e5e5e5] text-center text-[11px] text-[#737373]">
-          비밀번호 없이 GitHub 또는 이메일 링크로 간편하고 안전하게 로그인됩니다.
+        {/* Footer info & Privacy notice */}
+        <div className="mt-5 pt-3 border-t border-[#e5e5e5] text-center text-[11px] text-[#737373] leading-relaxed">
+          <div>비밀번호 없이 소셜 계정 또는 이메일 링크로 간편하게 로그인됩니다.</div>
+          <div className="mt-1 text-[10.5px] text-[#a3a3a3]">
+            * 프라이버시 보호를 위해 Google 실명 및 프로필 사진을 일절 수집하지 않으며 고유 아바타가 생성됩니다.
+          </div>
         </div>
       </div>
     </div>
