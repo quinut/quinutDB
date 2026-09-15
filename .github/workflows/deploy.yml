@@ -1,4 +1,4 @@
-name: Deploy QuinutDB to GitHub Pages
+name: Deploy quinutDB to GitHub Pages
 
 on:
   push:

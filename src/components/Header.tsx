@@ -43,10 +43,10 @@ export const Header: React.FC<HeaderProps> = ({ onNavigateEdit }) => {
             >
               <img
                 src="/icon.png"
-                alt="QuinutDB"
+                alt="quinutDB"
                 className="h-7 w-7 rounded-[8px] object-cover border border-[#e5e5e5] shadow-2xs shrink-0"
               />
-              <span>QuinutDB</span>
+              <span>quinutDB</span>
             </a>
             <span className="rounded-[18px] bg-[#f5f5f5] px-2 py-0.5 text-[11px] font-medium text-[#737373] border border-[#e5e5e5]">
               db.quinut.xyz

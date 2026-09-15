@@ -1,4 +1,4 @@
-# QuinutDB 🎮
+# quinutDB
 
 > **A curated, community-driven database for emulation frontends, launchers, and retro gaming operating systems.**
 > Built with an achromatic blueprint aesthetic, powered by Vite, React, TypeScript, Tailwind CSS, and Supabase.

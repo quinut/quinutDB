@@ -686,7 +686,7 @@ export default function EditPage({ onNavigateHome }: EditPageProps) {
             <div className="flex items-center gap-2">
               <img
                 src="/icon.png"
-                alt="QuinutDB"
+                alt="quinutDB"
                 className="h-5 w-5 rounded-[5px] object-cover border border-[#e5e5e5] shadow-2xs shrink-0"
               />
               <span className="text-[16px] font-semibold tracking-[-0.4px] text-[#0a0a0a]">

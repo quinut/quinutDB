@@ -74,7 +74,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         <div className="flex flex-col gap-1.5 mb-6 pr-8">
           <div className="flex items-center gap-2">
             <span className="text-[18px] font-semibold tracking-[-0.4px] text-[#0a0a0a]">
-              QuinutDB 로그인
+              quinutDB 로그인
             </span>
             <span className="rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5] px-2 py-0.5 text-[10px] font-medium text-[#737373]">
               커뮤니티

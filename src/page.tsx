@@ -444,7 +444,7 @@ export default function App() {
       {/* 5. Minimal Footer */}
       <footer className="w-full border-t border-[#e5e5e5] bg-[#ffffff] py-6 text-center text-[13px] text-[#737373]">
         <div className="mx-auto max-w-[1400px] px-6 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <span>&copy; {new Date().getFullYear()} QuinutDB (db.quinut.xyz) — Curated by quinut</span>
+          <span>&copy; {new Date().getFullYear()} quinutDB (db.quinut.xyz) — Curated by quinut</span>
           <span className="text-[12px] text-[#737373]">{language === 'ko' ? '아크로마틱 블루프린트 디자인' : 'Achromatic Blueprint Design'}</span>
         </div>
       </footer>
