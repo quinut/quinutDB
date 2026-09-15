@@ -59,7 +59,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const isAdmin = Boolean(
         data?.is_admin ||
         currentUser.email === 'quinut@proton.me' ||
-        resolvedUsername.toLowerCase() === 'quinut'
+        (currentUser.app_metadata?.provider === 'github' &&
+          currentUser.user_metadata?.user_name?.toLowerCase() === 'quinut')
       );
 
       setProfile({
