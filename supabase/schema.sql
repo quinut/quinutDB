@@ -6,9 +6,9 @@
 -- 1. Profiles Table (Automatically synced from auth.users)
 create table if not exists public.profiles (
   id uuid references auth.users on delete cascade primary key,
-  email text,
   username text,
   avatar_url text,
+  is_admin boolean default false,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
@@ -18,18 +18,45 @@ returns trigger
 language plpgsql
 security definer set search_path = public
 as $$
+declare
+  extracted_username text;
+  extracted_avatar text;
+  is_admin_user boolean;
 begin
-  insert into public.profiles (id, email, username, avatar_url)
+  extracted_username := coalesce(
+    new.raw_user_meta_data->>'user_name',
+    new.raw_user_meta_data->>'preferred_username',
+    new.raw_user_meta_data->>'full_name',
+    split_part(coalesce(new.email, ''), '@', 1),
+    'User'
+  );
+  
+  extracted_avatar := coalesce(
+    new.raw_user_meta_data->>'avatar_url',
+    new.raw_user_meta_data->>'picture',
+    ''
+  );
+
+  is_admin_user := (
+    new.email = 'quinut@proton.me' or 
+    lower(extracted_username) = 'quinut'
+  );
+
+  insert into public.profiles (id, username, avatar_url, is_admin)
   values (
     new.id,
-    new.email,
-    coalesce(new.raw_user_meta_data->>'user_name', new.raw_user_meta_data->>'full_name', split_part(new.email, '@', 1)),
-    coalesce(new.raw_user_meta_data->>'avatar_url', '')
+    extracted_username,
+    extracted_avatar,
+    is_admin_user
   )
   on conflict (id) do update set
-    email = excluded.email,
     username = coalesce(excluded.username, profiles.username),
-    avatar_url = coalesce(nullif(excluded.avatar_url, ''), profiles.avatar_url);
+    avatar_url = coalesce(nullif(excluded.avatar_url, ''), profiles.avatar_url),
+    is_admin = case when is_admin_user then true else profiles.is_admin end;
+
+  return new;
+exception when others then
+  -- Do not block authentication if profile upsert fails
   return new;
 end;
 $$;
@@ -38,6 +65,20 @@ drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert or update on auth.users
   for each row execute procedure public.handle_new_user();
+
+-- Helper function to check admin rights
+create or replace function public.is_admin()
+returns boolean
+language sql
+security definer
+set search_path = public
+as $$
+  select coalesce(
+    (select is_admin from public.profiles where id = auth.uid()),
+    false
+  );
+$$;
+
 
 -- 2. Catalog Items Table (Frontends and CFW/OS items)
 create table if not exists public.items (
@@ -128,27 +169,31 @@ alter table public.items enable row level security;
 alter table public.item_ratings enable row level security;
 alter table public.item_reviews enable row level security;
 
--- Items Policies (Public read, Authenticated insert/update/delete)
+-- Items Policies (Public read, Admin only insert/update/delete)
 drop policy if exists "Items are viewable by everyone" on public.items;
 create policy "Items are viewable by everyone"
   on public.items for select
   using (true);
 
 drop policy if exists "Authenticated users can insert items" on public.items;
-create policy "Authenticated users can insert items"
+drop policy if exists "Only admins can insert items" on public.items;
+create policy "Only admins can insert items"
   on public.items for insert
-  with check (auth.uid() is not null);
+  with check (public.is_admin() or auth.jwt() ->> 'email' = 'quinut@proton.me');
 
 drop policy if exists "Authenticated users can update items" on public.items;
-create policy "Authenticated users can update items"
+drop policy if exists "Only admins can update items" on public.items;
+create policy "Only admins can update items"
   on public.items for update
-  using (auth.uid() is not null)
-  with check (auth.uid() is not null);
+  using (public.is_admin() or auth.jwt() ->> 'email' = 'quinut@proton.me')
+  with check (public.is_admin() or auth.jwt() ->> 'email' = 'quinut@proton.me');
 
 drop policy if exists "Authenticated users can delete items" on public.items;
-create policy "Authenticated users can delete items"
+drop policy if exists "Only admins can delete items" on public.items;
+create policy "Only admins can delete items"
   on public.items for delete
-  using (auth.uid() is not null);
+  using (public.is_admin() or auth.jwt() ->> 'email' = 'quinut@proton.me');
+
 
 -- Profiles Policies
 drop policy if exists "Public profiles are viewable by everyone" on public.profiles;
