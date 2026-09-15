@@ -241,7 +241,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         <div className="mt-5 pt-3 border-t border-[#e5e5e5] text-center text-[11px] text-[#737373] leading-relaxed">
           <div>비밀번호 없이 소셜 계정 또는 이메일 링크로 간편하게 로그인됩니다.</div>
           <div className="mt-1 text-[10.5px] text-[#a3a3a3]">
-            * 프라이버시 보호를 위해 Google 실명 및 프로필 사진을 일절 수집하지 않으며 고유 아바타가 생성됩니다.
+            * 프라이버시 보호를 위해 Google 실명 및 프로필 사진을 일절 수집하지 않으며 고유 아바타가 생성됩니다.{' '}
+            <a
+              href="/privacy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline text-[#737373] hover:text-[#0a0a0a] transition-colors"
+            >
+              개인정보처리방침
+            </a>
           </div>
         </div>
       </div>

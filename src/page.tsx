@@ -13,6 +13,7 @@ import { FrontendItem, OSFirmwareItem, ProjectStatus, ItemRatings } from './type
 import { useCatalog } from './hooks/useCatalog';
 import { SlidersHorizontal, Search, RotateCcw, ChevronDown, Database, PlusCircle, Layers } from 'lucide-react';
 import EditPage from './app/edit/page';
+import PrivacyPage from './app/privacy/page';
 import { useAllRatingStats } from './hooks/useItemCommunity';
 import { useLanguage } from './contexts/LanguageContext';
 
@@ -258,6 +259,15 @@ export default function App() {
     return <EditPage onNavigateHome={() => navigate('/')} />;
   }
 
+  // If URL route is /privacy, render Privacy Policy Page
+  if (
+    currentPath === '/privacy' ||
+    currentPath.startsWith('/privacy') ||
+    (typeof window !== 'undefined' && window.location.search.includes('route=privacy'))
+  ) {
+    return <PrivacyPage onNavigateHome={() => navigate('/')} />;
+  }
+
   return (
     <div className="min-h-screen bg-[#f5f5f5] text-[#0a0a0a] flex flex-col antialiased">
       {/* 1. Global Header */}
@@ -446,9 +456,24 @@ export default function App() {
 
       {/* 5. Minimal Footer */}
       <footer className="w-full border-t border-[#e5e5e5] bg-[#ffffff] py-6 text-center text-[13px] text-[#737373]">
-        <div className="mx-auto max-w-[1400px] px-6 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <span>&copy; {new Date().getFullYear()} quinutDB (db.quinut.xyz) — Curated by quinut</span>
-          <span className="text-[12px] text-[#737373]">{language === 'ko' ? '아크로마틱 블루프린트 디자인' : 'Achromatic Blueprint Design'}</span>
+        <div className="mx-auto max-w-[1400px] px-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <span>&copy; {new Date().getFullYear()} quinutDB (db.quinut.xyz)</span>
+            <span className="text-[#d4d4d4]">·</span>
+            <a
+              href="/privacy"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate('/privacy');
+              }}
+              className="text-[12px] font-medium text-[#737373] hover:text-[#0a0a0a] transition-colors underline underline-offset-4 cursor-pointer"
+            >
+              {language === 'ko' ? '개인정보처리방침' : 'Privacy Policy'}
+            </a>
+          </div>
+          <span className="text-[12px] text-[#737373]">
+            {language === 'ko' ? '아크로마틱 블루프린트 디자인' : 'Achromatic Blueprint Design'}
+          </span>
         </div>
       </footer>
     </div>
