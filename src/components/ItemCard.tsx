@@ -185,10 +185,40 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, type, communityStats, 
         className="relative aspect-square w-full bg-[#fafafa] border-b border-[#e5e5e5] overflow-hidden"
       >
         {/* Top Badges Overlay */}
-        <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
+        <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 z-10">
           <PricingBadge pricing={item.pricing} />
           <StatusIndicator status={item.status} />
         </div>
+
+        {/* Bottom Overlay: Compact qScore 3-Benchmark Badge */}
+        {item.ratings && (
+          <div className="absolute bottom-2.5 left-2.5 z-10">
+            <div
+              title={`qScore — ${t.filter.adoptionLabel}: ${qAdoption}/5, ${t.filter.easeOfUseLabel}: ${qEase}/5, ${t.ratings.activity}: ${qActivity}/5`}
+              className="inline-flex items-center gap-1.5 rounded-[18px] bg-[#0a0a0a]/80 backdrop-blur-md px-2.5 py-1 text-[11px] font-medium text-[#fafafa] border border-white/15 shadow-sm"
+            >
+              <span className="rounded-[4px] bg-[#ffffff] text-[#0a0a0a] px-1 py-0.2 text-[9px] font-black tracking-tight leading-none">
+                qScore
+              </span>
+              <div className="flex items-center gap-1.5 text-[11px]">
+                <span className="inline-flex items-center">
+                  <span className="text-[#a3a3a3] text-[10px] mr-0.5">{language === 'ko' ? '대중' : 'Pop'}</span>
+                  <span className="font-semibold text-[#fafafa]">{qAdoption}</span>
+                </span>
+                <span className="text-[#525252] text-[9px] leading-none">·</span>
+                <span className="inline-flex items-center">
+                  <span className="text-[#a3a3a3] text-[10px] mr-0.5">{language === 'ko' ? '편의' : 'Ease'}</span>
+                  <span className="font-semibold text-[#fafafa]">{qEase}</span>
+                </span>
+                <span className="text-[#525252] text-[9px] leading-none">·</span>
+                <span className="inline-flex items-center">
+                  <span className="text-[#a3a3a3] text-[10px] mr-0.5">{language === 'ko' ? '활성' : 'Act'}</span>
+                  <span className="font-semibold text-[#fafafa]">{qActivity}</span>
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* 1:1 Boxart Full-Bleed Image Frame */}
         {item.logoUrl && !logoError ? (
@@ -211,72 +241,35 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, type, communityStats, 
       {/* 2. Structured Metadata Body                                  */}
       {/* ============================================================ */}
       <div className="flex flex-1 flex-col p-4">
-        {/* Name & Short Description */}
-        <div className="flex flex-col gap-1 mb-2.5">
+        {/* Name & userScore Header */}
+        <div className="flex items-start justify-between gap-2 mb-1.5">
           <h3 className="text-[16px] font-bold tracking-tight text-[#0a0a0a] group-hover:text-neutral-600 transition-colors">
             {item.name}
           </h3>
-          <p className="text-[12px] text-[#737373] line-clamp-2 leading-relaxed min-h-[34px]">
-            {item.shortDesc}
-          </p>
-        </div>
-
-        {/* Score Header: qScore badge + userScore pill */}
-        <div className="flex items-center justify-between mb-1.5 px-0.5">
-          <div className="flex items-center gap-1">
-            <span className="rounded-[6px] bg-[#0a0a0a] text-[#ffffff] px-1.5 py-0.2 text-[9.5px] font-bold tracking-tight">
-              qScore
-            </span>
-          </div>
           {hasUserScore ? (
             <div
               title={`${t.userScore.title}: ${avgUserScore.toFixed(1)}/5 (${totalUserRatings})`}
-              className="flex items-center gap-1 text-[11px] font-semibold text-[#0a0a0a] bg-[#fafafa] border border-[#e5e5e5] rounded-[10px] px-1.5 py-0.5"
+              className="flex items-center gap-1 text-[11px] font-semibold text-[#0a0a0a] bg-[#fafafa] border border-[#e5e5e5] rounded-[10px] px-2 py-0.5 shrink-0 shadow-2xs"
             >
               <Star size={11} className="fill-[#0a0a0a] text-[#0a0a0a]" />
               <span>{avgUserScore.toFixed(1)}</span>
               <span className="text-[9.5px] font-normal text-[#737373]">({totalUserRatings})</span>
             </div>
           ) : (
-            <div className="flex items-center gap-1 text-[10px] text-[#a3a3a3] font-medium">
+            <div
+              title={t.userScore.noRatings}
+              className="flex items-center gap-1 text-[10px] text-[#a3a3a3] font-medium shrink-0 pt-0.5"
+            >
               <Star size={10} className="text-[#a3a3a3]" />
               <span>userScore —</span>
             </div>
           )}
         </div>
 
-        {/* qScore 3-Benchmark Pills (Adoption, Ease, Activity) */}
-        {item.ratings && (
-          <div className="grid grid-cols-3 gap-1.5 mb-3">
-            <div
-              title={`${t.filter.adoptionLabel}: ${qAdoption}/5`}
-              className="flex flex-col items-center justify-center py-1.5 px-1 rounded-[12px] bg-[#fafafa] border border-[#e5e5e5] shadow-2xs"
-            >
-              <span className="text-[10px] font-medium text-[#737373] tracking-tight">{t.filter.adoptionLabel}</span>
-              <span className="text-[13px] font-semibold text-[#0a0a0a] leading-none mt-1">
-                {qAdoption}<span className="text-[10px] font-normal text-[#737373]">/5</span>
-              </span>
-            </div>
-            <div
-              title={`${t.filter.easeOfUseLabel}: ${qEase}/5`}
-              className="flex flex-col items-center justify-center py-1.5 px-1 rounded-[12px] bg-[#fafafa] border border-[#e5e5e5] shadow-2xs"
-            >
-              <span className="text-[10px] font-medium text-[#737373] tracking-tight">{t.filter.easeOfUseLabel}</span>
-              <span className="text-[13px] font-semibold text-[#0a0a0a] leading-none mt-1">
-                {qEase}<span className="text-[10px] font-normal text-[#737373]">/5</span>
-              </span>
-            </div>
-            <div
-              title={`${t.ratings.activity}: ${qActivity}/5`}
-              className="flex flex-col items-center justify-center py-1.5 px-1 rounded-[12px] bg-[#fafafa] border border-[#e5e5e5] shadow-2xs"
-            >
-              <span className="text-[10px] font-medium text-[#737373] tracking-tight">{t.ratings.activity}</span>
-              <span className="text-[13px] font-semibold text-[#0a0a0a] leading-none mt-1">
-                {qActivity}<span className="text-[10px] font-normal text-[#737373]">/5</span>
-              </span>
-            </div>
-          </div>
-        )}
+        {/* Short Description */}
+        <p className="text-[12px] text-[#737373] line-clamp-2 leading-relaxed min-h-[34px] mb-3">
+          {item.shortDesc}
+        </p>
 
         {/* Type-Specific Meta & Features */}
         <div className="flex flex-col gap-3 py-2 border-t border-[#e5e5e5]/80 my-auto">
