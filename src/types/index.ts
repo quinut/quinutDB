@@ -41,6 +41,7 @@ export interface FrontendItem {
   ratings: ItemRatings;
   logoUrl: string;
   coverImageUrl: string;
+  screenshots?: string[];
   officialUrl?: string;
   downloadUrl?: string;
   githubRepo?: string;
@@ -73,6 +74,7 @@ export interface OSFirmwareItem {
   ratings: ItemRatings;
   logoUrl: string;
   coverImageUrl: string;
+  screenshots?: string[];
   officialUrl?: string;
   downloadUrl?: string;
   githubRepo?: string;

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   Globe,
   Download,
@@ -11,6 +11,9 @@ import {
   LogIn,
   ChevronDown,
   ChevronUp,
+  ChevronLeft,
+  ChevronRight,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { FrontendItem, OSFirmwareItem, ScoreValue } from '../types';
 import { TriStateIndicator, PricingBadge, StatusIndicator } from './ItemCard';
@@ -106,6 +109,20 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
   const [reviewContent, setReviewContent] = useState('');
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
   const [reviewError, setReviewError] = useState<string | null>(null);
+
+  const [activeScreenshotIdx, setActiveScreenshotIdx] = useState(0);
+
+  const galleryImages = useMemo(() => {
+    if (!item) return [];
+    if (item.screenshots && item.screenshots.length > 0) {
+      return item.screenshots.filter(Boolean);
+    }
+    return [item.coverImageUrl || item.logoUrl].filter(Boolean) as string[];
+  }, [item]);
+
+  useEffect(() => {
+    setActiveScreenshotIdx(0);
+  }, [item?.id]);
 
   useEffect(() => {
     if (myRating) {
@@ -238,44 +255,102 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
           {/* Left Column (col-span-7): UI Showcase & Specification     */}
           {/* ---------------------------------------------------------- */}
           <div className="lg:col-span-7 p-6 sm:p-8 flex flex-col gap-6">
-            {/* 1:1 Official Boxart Showcase (Matching ItemCard Boxart) */}
+            {/* Real UI Screenshot Gallery */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <h4 className="text-[11px] font-semibold uppercase tracking-wider text-[#737373]">
-                  공식 박스아트 & 아이덴티티
-                </h4>
-                <span className="text-[11px] text-[#737373]">1:1 Boxart Format</span>
-              </div>
-
-              <div className="flex justify-center w-full">
-                <div
-                  style={{ aspectRatio: '1 / 1' }}
-                  className="relative aspect-square w-full max-w-[340px] p-3.5 flex items-center justify-center bg-[#fafafa] rounded-[22px] border border-[#e5e5e5] overflow-hidden shadow-xs group"
-                >
-                  {/* Top-Right Badges */}
-                  <div className="absolute top-5 right-5 flex items-center gap-1.5 z-10">
-                    <PricingBadge pricing={item.pricing} />
-                    <StatusIndicator status={item.status} />
-                  </div>
-
-                  {/* 1:1 Boxart Image Frame */}
-                  <div className="relative h-full w-full overflow-hidden rounded-[16px] border border-[#e5e5e5]/80 bg-[#ffffff] shadow-xs">
-                    {item.logoUrl ? (
-                      <img
-                        src={item.logoUrl}
-                        alt={`${item.name} boxart logo`}
-                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center bg-[#f5f5f5]">
-                        <span className="text-[44px] font-bold text-[#0a0a0a] select-none tracking-tight">
-                          {item.name.slice(0, 2).toUpperCase()}
-                        </span>
-                      </div>
-                    )}
-                  </div>
+                <div className="flex items-center gap-2">
+                  <h4 className="text-[11px] font-semibold uppercase tracking-wider text-[#737373]">
+                    {t.detail.galleryTitle}
+                  </h4>
+                  {galleryImages.length > 1 && (
+                    <span className="rounded-[18px] bg-[#f5f5f5] text-[#171717] border border-[#e5e5e5] px-2 py-0.5 text-[10px] font-medium tabular-nums">
+                      {activeScreenshotIdx + 1} / {galleryImages.length}
+                    </span>
+                  )}
                 </div>
+                <span className="text-[11px] text-[#737373]">{t.detail.galleryFormat}</span>
               </div>
+
+              {/* Main Screenshot Container */}
+              <div className="relative w-full aspect-[16/9] rounded-[22px] border border-[#e5e5e5] bg-[#0a0a0a] overflow-hidden shadow-xs group flex items-center justify-center">
+                {/* Top-Right Badges */}
+                <div className="absolute top-3.5 right-3.5 flex items-center gap-1.5 z-10">
+                  <PricingBadge pricing={item.pricing} />
+                  <StatusIndicator status={item.status} />
+                </div>
+
+                {galleryImages.length > 0 ? (
+                  <img
+                    src={galleryImages[activeScreenshotIdx] || galleryImages[0]}
+                    alt={`${item.name} screenshot ${activeScreenshotIdx + 1}`}
+                    className="h-full w-full object-contain select-none transition-opacity duration-200"
+                  />
+                ) : (
+                  <div className="flex flex-col items-center justify-center gap-2 text-[#737373] p-6 text-center">
+                    <ImageIcon size={32} strokeWidth={1.5} className="text-[#a3a3a3]" />
+                    <span className="text-[12px]">{t.detail.noScreenshots}</span>
+                  </div>
+                )}
+
+                {/* Left/Right Navigation Arrows if > 1 images */}
+                {galleryImages.length > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveScreenshotIdx((prev) =>
+                          prev > 0 ? prev - 1 : galleryImages.length - 1
+                        );
+                      }}
+                      aria-label="Previous screenshot"
+                      className="absolute left-3 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-[#0a0a0a]/70 hover:bg-[#0a0a0a] text-[#ffffff] border border-[#ffffff]/20 backdrop-blur-xs transition-all opacity-80 group-hover:opacity-100 active:scale-95 cursor-pointer z-10"
+                    >
+                      <ChevronLeft size={18} strokeWidth={2.5} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveScreenshotIdx((prev) =>
+                          prev < galleryImages.length - 1 ? prev + 1 : 0
+                        );
+                      }}
+                      aria-label="Next screenshot"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-[#0a0a0a]/70 hover:bg-[#0a0a0a] text-[#ffffff] border border-[#ffffff]/20 backdrop-blur-xs transition-all opacity-80 group-hover:opacity-100 active:scale-95 cursor-pointer z-10"
+                    >
+                      <ChevronRight size={18} strokeWidth={2.5} />
+                    </button>
+                  </>
+                )}
+              </div>
+
+              {/* Thumbnails Strip if > 1 images */}
+              {galleryImages.length > 1 && (
+                <div className="flex items-center gap-2 overflow-x-auto pb-1 mt-2.5 scrollbar-thin">
+                  {galleryImages.map((imgUrl, idx) => {
+                    const isActive = idx === activeScreenshotIdx;
+                    return (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setActiveScreenshotIdx(idx)}
+                        className={`relative h-12 w-20 shrink-0 rounded-[10px] overflow-hidden border transition-all cursor-pointer bg-[#0a0a0a] ${
+                          isActive
+                            ? 'border-[#0a0a0a] ring-2 ring-[#0a0a0a]/30 scale-[1.03] shadow-xs'
+                            : 'border-[#e5e5e5] opacity-60 hover:opacity-100 hover:border-[#737373]'
+                        }`}
+                      >
+                        <img
+                          src={imgUrl}
+                          alt={`Thumbnail ${idx + 1}`}
+                          className="h-full w-full object-cover"
+                        />
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             {/* Curation & Community Ratings (3-Category 1-5 Benchmark) */}

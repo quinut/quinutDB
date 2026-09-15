@@ -19,6 +19,9 @@ import {
   RefreshCw,
   Image as ImageIcon,
   Globe,
+  ChevronLeft,
+  ChevronRight,
+  Plus,
 } from 'lucide-react';
 import {
   FrontendItem,
@@ -250,6 +253,8 @@ export default function EditPage({ onNavigateHome }: EditPageProps) {
   const [githubRepo, setGithubRepo] = useState('');
   const [logoUrl, setLogoUrl] = useState('');
   const [coverImageUrl, setCoverImageUrl] = useState('');
+  const [screenshots, setScreenshots] = useState<string[]>([]);
+  const [newScreenshotUrl, setNewScreenshotUrl] = useState('');
 
   // Ratings
   const [adoption, setAdoption] = useState<ScoreValue>(4);
@@ -303,6 +308,8 @@ export default function EditPage({ onNavigateHome }: EditPageProps) {
     setGithubRepo('');
     setLogoUrl('');
     setCoverImageUrl('');
+    setScreenshots([]);
+    setNewScreenshotUrl('');
     setAdoption(4);
     setEaseOfUse(4);
     setActivity(4);
@@ -329,6 +336,34 @@ export default function EditPage({ onNavigateHome }: EditPageProps) {
       setPluginLoader(true);
       setEmuNandOrSandbox(true);
     }
+  };
+
+  // Helper methods for managing multi screenshots
+  const handleAddScreenshot = () => {
+    if (!newScreenshotUrl.trim()) return;
+    const splitUrls = newScreenshotUrl
+      .split(/[\r\n,]+/)
+      .map((u) => u.trim())
+      .filter(Boolean);
+
+    if (splitUrls.length > 0) {
+      setScreenshots((prev) => [...prev, ...splitUrls]);
+      setNewScreenshotUrl('');
+    }
+  };
+
+  const handleRemoveScreenshot = (index: number) => {
+    setScreenshots((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleMoveScreenshot = (fromIndex: number, toIndex: number) => {
+    if (toIndex < 0 || toIndex >= screenshots.length) return;
+    setScreenshots((prev) => {
+      const next = [...prev];
+      const [moved] = next.splice(fromIndex, 1);
+      next.splice(toIndex, 0, moved);
+      return next;
+    });
   };
 
   // Switch Mode
@@ -358,6 +393,14 @@ export default function EditPage({ onNavigateHome }: EditPageProps) {
         setGithubRepo(found.githubRepo || '');
         setLogoUrl(found.logoUrl || '');
         setCoverImageUrl(found.coverImageUrl || '');
+        setScreenshots(
+          Array.isArray(found.screenshots) && found.screenshots.length > 0
+            ? found.screenshots
+            : found.coverImageUrl
+            ? [found.coverImageUrl]
+            : []
+        );
+        setNewScreenshotUrl('');
         setAdoption(found.ratings?.adoption || 4);
         setEaseOfUse(found.ratings?.easeOfUse || 4);
         setActivity(found.ratings?.activity || 4);
@@ -388,6 +431,14 @@ export default function EditPage({ onNavigateHome }: EditPageProps) {
         setGithubRepo(found.githubRepo || '');
         setLogoUrl(found.logoUrl || '');
         setCoverImageUrl(found.coverImageUrl || '');
+        setScreenshots(
+          Array.isArray(found.screenshots) && found.screenshots.length > 0
+            ? found.screenshots
+            : found.coverImageUrl
+            ? [found.coverImageUrl]
+            : []
+        );
+        setNewScreenshotUrl('');
         setAdoption(found.ratings?.adoption || 4);
         setEaseOfUse(found.ratings?.easeOfUse || 4);
         setActivity(found.ratings?.activity || 4);
@@ -446,7 +497,8 @@ export default function EditPage({ onNavigateHome }: EditPageProps) {
         canReplaceHomeLauncher,
         ratings: ratingsObj,
         logoUrl: logoUrl || 'https://avatars.githubusercontent.com/u/130823084?v=4',
-        coverImageUrl: coverImageUrl || logoUrl || 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1200&q=80',
+        coverImageUrl: coverImageUrl || (screenshots.length > 0 ? screenshots[0] : logoUrl) || 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1200&q=80',
+        screenshots: screenshots.length > 0 ? screenshots : (coverImageUrl ? [coverImageUrl] : []),
         officialUrl: officialUrl || undefined,
         downloadUrl: downloadUrl || undefined,
         githubRepo: githubRepo || undefined,
@@ -480,7 +532,8 @@ export default function EditPage({ onNavigateHome }: EditPageProps) {
         },
         ratings: ratingsObj,
         logoUrl: logoUrl || 'https://avatars.githubusercontent.com/u/130823084?v=4',
-        coverImageUrl: coverImageUrl || logoUrl || 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1200&q=80',
+        coverImageUrl: coverImageUrl || (screenshots.length > 0 ? screenshots[0] : logoUrl) || 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1200&q=80',
+        screenshots: screenshots.length > 0 ? screenshots : (coverImageUrl ? [coverImageUrl] : []),
         officialUrl: officialUrl || undefined,
         downloadUrl: downloadUrl || undefined,
         githubRepo: githubRepo || undefined,
@@ -499,6 +552,7 @@ export default function EditPage({ onNavigateHome }: EditPageProps) {
     githubRepo,
     logoUrl,
     coverImageUrl,
+    screenshots,
     adoption,
     easeOfUse,
     activity,
@@ -541,6 +595,14 @@ export default function EditPage({ onNavigateHome }: EditPageProps) {
     setGithubRepo(data.githubRepo || '');
     setLogoUrl(data.logoUrl || '');
     setCoverImageUrl(data.coverImageUrl || '');
+    setScreenshots(
+      Array.isArray(data.screenshots) && data.screenshots.length > 0
+        ? data.screenshots
+        : data.coverImageUrl
+        ? [data.coverImageUrl]
+        : []
+    );
+    setNewScreenshotUrl('');
 
     if (data.ratings) {
       setAdoption(data.ratings.adoption || 4);
@@ -1213,6 +1275,126 @@ export default function EditPage({ onNavigateHome }: EditPageProps) {
                       </span>
                     </div>
                   </div>
+                </div>
+
+                {/* Real UI Screenshot Gallery Manager */}
+                <div className="flex flex-col gap-3 border-t border-[#e5e5e5] pt-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <label className="text-[12px] font-semibold text-[#0a0a0a]">
+                          {t.editor.screenshotsTitle}
+                        </label>
+                        <span className="rounded-[18px] bg-[#f5f5f5] text-[#171717] border border-[#e5e5e5] px-2 py-0.2 text-[10px] font-medium tabular-nums">
+                          {screenshots.length}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-[#737373] mt-0.5">
+                        {t.editor.screenshotsDesc}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Add URL Input and Action Row */}
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="url"
+                        value={newScreenshotUrl}
+                        onChange={(e) => setNewScreenshotUrl(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleAddScreenshot();
+                          }
+                        }}
+                        placeholder={t.editor.screenshotUrlPlaceholder}
+                        className="flex-1 rounded-[18px] border border-[#e5e5e5] bg-[#fafafa] py-2 px-3.5 text-[12px] text-[#0a0a0a] focus:border-[#0a0a0a] focus:bg-[#ffffff] focus:outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddScreenshot}
+                        disabled={!newScreenshotUrl.trim()}
+                        className="inline-flex items-center justify-center gap-1.5 rounded-[18px] bg-[#0a0a0a] px-4 py-2 text-[12px] font-medium text-[#fafafa] hover:opacity-90 disabled:opacity-40 transition-all cursor-pointer shadow-xs shrink-0"
+                      >
+                        <Plus size={14} strokeWidth={2.5} />
+                        <span>{t.editor.addScreenshot}</span>
+                      </button>
+                    </div>
+                    <span className="text-[10.5px] text-[#a3a3a3]">
+                      {t.editor.batchAddHelper}
+                    </span>
+                  </div>
+
+                  {/* Screenshots Thumbnail List */}
+                  {screenshots.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center p-6 rounded-[18px] border border-dashed border-[#e5e5e5] bg-[#fafafa] text-center gap-1.5">
+                      <ImageIcon size={24} className="text-[#a3a3a3] stroke-[1.5]" />
+                      <span className="text-[12px] text-[#737373]">
+                        {t.editor.noScreenshotsYet}
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-1">
+                      {screenshots.map((url, idx) => (
+                        <div
+                          key={idx}
+                          className="relative aspect-video rounded-[14px] border border-[#e5e5e5] bg-[#0a0a0a] overflow-hidden group shadow-xs"
+                        >
+                          <img
+                            src={url}
+                            alt={`Screenshot ${idx + 1}`}
+                            className="h-full w-full object-cover"
+                            onError={(e) => (e.currentTarget.src = '')}
+                          />
+
+                          {/* Index Badge */}
+                          <div className="absolute top-1.5 left-1.5 flex items-center gap-1 z-10">
+                            <span className="rounded-[6px] bg-[#0a0a0a]/80 text-[#ffffff] px-1.5 py-0.5 text-[10px] font-medium backdrop-blur-xs">
+                              #{idx + 1}
+                            </span>
+                            {idx === 0 && (
+                              <span className="rounded-[6px] bg-[#0a0a0a] text-[#ffffff] border border-[#ffffff]/20 px-1.5 py-0.5 text-[9px] font-semibold">
+                                {t.editor.primaryScreenshot}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Top-Right Remove Button */}
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveScreenshot(idx)}
+                            aria-label="Remove screenshot"
+                            className="absolute top-1.5 right-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-[#0a0a0a]/80 hover:bg-rose-600 text-[#ffffff] backdrop-blur-xs transition-colors cursor-pointer z-10"
+                          >
+                            <X size={12} strokeWidth={2.5} />
+                          </button>
+
+                          {/* Bottom Reorder Controls on Hover */}
+                          <div className="absolute inset-x-0 bottom-0 p-1.5 bg-gradient-to-t from-[#0a0a0a]/80 to-transparent flex items-center justify-between opacity-90 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity z-10">
+                            <button
+                              type="button"
+                              onClick={() => handleMoveScreenshot(idx, idx - 1)}
+                              disabled={idx === 0}
+                              aria-label="Move left"
+                              className="flex h-5 w-5 items-center justify-center rounded-full bg-[#ffffff]/20 hover:bg-[#ffffff]/40 disabled:opacity-20 text-[#ffffff] transition-all cursor-pointer disabled:cursor-not-allowed"
+                            >
+                              <ChevronLeft size={12} strokeWidth={2.5} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleMoveScreenshot(idx, idx + 1)}
+                              disabled={idx === screenshots.length - 1}
+                              aria-label="Move right"
+                              className="flex h-5 w-5 items-center justify-center rounded-full bg-[#ffffff]/20 hover:bg-[#ffffff]/40 disabled:opacity-20 text-[#ffffff] transition-all cursor-pointer disabled:cursor-not-allowed"
+                            >
+                              <ChevronRight size={12} strokeWidth={2.5} />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 
