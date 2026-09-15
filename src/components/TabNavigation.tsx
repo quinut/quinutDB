@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export type MainTabType = 'all' | 'frontends' | 'cfw';
 
@@ -12,6 +13,8 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({
   activeTab,
   onTabChange
 }) => {
+  const { t } = useLanguage();
+
   return (
     <nav className="w-full" aria-label="Main Catalogs">
       <div className="inline-flex w-full sm:w-auto items-center p-1 rounded-[24px] bg-[#fafafa] border border-[#e5e5e5]">
@@ -27,7 +30,7 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({
               : 'text-[#737373] hover:text-[#0a0a0a] hover:bg-[#f5f5f5]'
           }`}
         >
-          전체 카탈로그
+          {t.tabs.all}
         </button>
 
         {/* Tab 1: Frontends & Launchers */}
@@ -42,7 +45,7 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({
               : 'text-[#737373] hover:text-[#0a0a0a] hover:bg-[#f5f5f5]'
           }`}
         >
-프론트엔드 & 런처
+          {t.tabs.frontends}
         </button>
 
         {/* Tab 2: Custom Firmware & OS */}
@@ -57,7 +60,7 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({
               : 'text-[#737373] hover:text-[#0a0a0a] hover:bg-[#f5f5f5]'
           }`}
         >
-커스텀 펌웨어 & OS
+          {t.tabs.cfw}
         </button>
       </div>
     </nav>

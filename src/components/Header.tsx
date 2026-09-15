@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Coffee, PlusCircle, LogIn, LogOut, User as UserIcon, ChevronDown, ExternalLink } from 'lucide-react';
+import { Coffee, PlusCircle, LogIn, LogOut, User as UserIcon, ChevronDown, ExternalLink, Globe } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export interface HeaderProps {
   onNavigateEdit?: () => void;
@@ -8,9 +9,9 @@ export interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ onNavigateEdit }) => {
   const { user, profile, loading, signOut, openAuthModal } = useAuth();
+  const { language, toggleLanguage, t } = useLanguage();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
 
   const displayName = profile?.username || user?.user_metadata?.user_name || user?.email?.split('@')[0] || 'User';
   const displayEmail = profile?.email || user?.email || '';
@@ -46,13 +47,24 @@ export const Header: React.FC<HeaderProps> = ({ onNavigateEdit }) => {
               db.quinut.xyz
             </span>
           </div>
-<p className="text-[13px] text-[#737373] hidden sm:block tracking-[-0.2px]">
-              에뮬레이션 프론트엔드 & 레트로 런처 오픈 디렉토리
-            </p>
+          <p className="text-[13px] text-[#737373] hidden sm:block tracking-[-0.2px]">
+            {t.common.brandDesc}
+          </p>
         </div>
 
         {/* Right Action Buttons */}
         <div className="flex items-center gap-2 sm:gap-2.5">
+          {/* Language Switcher Toggle */}
+          <button
+            type="button"
+            onClick={toggleLanguage}
+            className="inline-flex h-[36px] items-center gap-1.5 rounded-[18px] border border-[#e5e5e5] bg-[#fafafa] px-3 text-[12px] font-semibold text-[#0a0a0a] hover:bg-[#e5e5e5] transition-colors cursor-pointer shadow-2xs"
+            title={language === 'ko' ? 'Switch to English' : '한국어로 전환'}
+          >
+            <Globe size={14} className="text-[#737373]" />
+            <span>{language === 'ko' ? 'EN' : '한국어'}</span>
+          </button>
+
           {/* Data Editor / Contribute Button */}
           <a
             href="/edit"
@@ -66,7 +78,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigateEdit }) => {
             className="group inline-flex h-[36px] items-center gap-1.5 rounded-[18px] border border-[#e5e5e5] bg-[#fafafa] px-3 text-[13px] font-medium text-[#0a0a0a] transition-colors hover:bg-[#e5e5e5]"
           >
             <PlusCircle size={15} className="shrink-0 text-[#737373] group-hover:text-[#0a0a0a]" />
-            <span>데이터 기여/수정</span>
+            <span>{t.common.contribute}</span>
           </a>
 
           {/* Ko-fi Support Button */}
@@ -78,7 +90,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigateEdit }) => {
             className="group inline-flex h-[36px] items-center gap-2 rounded-[18px] border border-[#e5e5e5] bg-transparent px-3 text-[13px] font-medium text-[#0a0a0a] transition-colors hover:bg-[#f5f5f5]"
           >
             <Coffee size={16} className="shrink-0 text-[#737373] group-hover:text-[#0a0a0a] transition-colors" />
-            <span className="hidden sm:inline">후원하기</span>
+            <span className="hidden sm:inline">{t.common.donate}</span>
           </a>
 
           {/* User Auth Section */}
@@ -113,7 +125,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigateEdit }) => {
                   </span>
                   {isAdmin && (
                     <span className="rounded-[8px] bg-[#0a0a0a] px-1.5 py-0.2 text-[9px] font-bold text-[#fafafa]">
-                      관리자
+                      {t.common.admin}
                     </span>
                   )}
                   <ChevronDown
@@ -174,7 +186,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigateEdit }) => {
                       className="flex items-center gap-2 rounded-[12px] px-2.5 py-2 text-[12px] font-medium text-[#0a0a0a] hover:bg-[#f5f5f5] transition-colors"
                     >
                       <PlusCircle size={14} className="text-[#737373]" />
-                      <span>카탈로그 데이터 관리 (/edit)</span>
+                      <span>{t.common.contribute}</span>
                     </a>
 
                     {user?.user_metadata?.user_name && (
@@ -185,7 +197,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigateEdit }) => {
                         className="flex items-center gap-2 rounded-[12px] px-2.5 py-2 text-[12px] font-medium text-[#0a0a0a] hover:bg-[#f5f5f5] transition-colors"
                       >
                         <ExternalLink size={14} className="text-[#737373]" />
-                        <span>GitHub 프로필</span>
+                        <span>{language === 'ko' ? 'GitHub 프로필' : 'GitHub Profile'}</span>
                       </a>
                     )}
                   </div>
@@ -201,7 +213,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigateEdit }) => {
                       className="flex w-full items-center justify-center gap-1.5 rounded-[14px] bg-[#fef2f2] hover:bg-[#fee2e2] text-[#dc2626] py-2 text-[12px] font-semibold transition-colors cursor-pointer"
                     >
                       <LogOut size={13} />
-                      <span>로그아웃</span>
+                      <span>{t.common.logout}</span>
                     </button>
                   </div>
                 </div>
@@ -214,7 +226,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigateEdit }) => {
               className="inline-flex h-[36px] items-center gap-1.5 rounded-[18px] bg-[#0a0a0a] px-3.5 text-[13px] font-medium text-[#fafafa] hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
             >
               <LogIn size={14} />
-              <span>로그인</span>
+              <span>{t.common.login}</span>
             </button>
           )}
 
@@ -242,7 +254,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigateEdit }) => {
                 d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
               />
             </svg>
-            <span className="hidden md:inline">깃허브</span>
+            <span className="hidden md:inline">GitHub</span>
           </a>
         </div>
       </div>

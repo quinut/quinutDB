@@ -8,6 +8,7 @@ import {
   ProjectStatus
 } from '../types';
 import { ItemRatingStats } from '../hooks/useItemCommunity';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export interface ItemCardProps {
   item: FrontendItem | OSFirmwareItem;
@@ -21,52 +22,54 @@ export const TriStateIndicator: React.FC<{
   value?: TriState;
   label: string;
 }> = ({ value, label }) => {
+  const { language } = useLanguage();
+
   if (value === true) {
     return (
-<span
-         title={`${label}: 지원됨`}
-         className="inline-flex items-center gap-1 rounded-[18px] bg-[#f0fdf4] border border-[#bbf7d0] px-2 py-0.5 text-[11px] font-medium text-[#166534]"
-       >
-         <svg
-           className="h-3 w-3 stroke-[2.5]"
-           viewBox="0 0 24 24"
-           fill="none"
-           stroke="currentColor"
-           strokeLinecap="round"
-           strokeLinejoin="round"
-         >
-           <polyline points="20 6 9 17 4 12" />
-         </svg>
-         <span>{label}</span>
-       </span>
+      <span
+        title={`${label}: ${language === 'ko' ? '지원됨' : 'Supported'}`}
+        className="inline-flex items-center gap-1 rounded-[18px] bg-[#f0fdf4] border border-[#bbf7d0] px-2 py-0.5 text-[11px] font-medium text-[#166534]"
+      >
+        <svg
+          className="h-3 w-3 stroke-[2.5]"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+        <span>{label}</span>
+      </span>
     );
   }
 
   if (value === false) {
     return (
-<span
-         title={`${label}: 지원 안 됨`}
-         className="inline-flex items-center gap-1 rounded-[18px] bg-[#fef2f2] border border-[#fecaca] px-2 py-0.5 text-[11px] font-medium text-[#991b1b]"
-       >
-         <svg
-           className="h-3 w-3 stroke-[2.5]"
-           viewBox="0 0 24 24"
-           fill="none"
-           stroke="currentColor"
-           strokeLinecap="round"
-           strokeLinejoin="round"
-         >
-           <line x1="18" y1="6" x2="6" y2="18" />
-           <line x1="6" y1="6" x2="18" y2="18" />
-         </svg>
-         <span>{label}</span>
-       </span>
+      <span
+        title={`${label}: ${language === 'ko' ? '지원 안 됨' : 'Not supported'}`}
+        className="inline-flex items-center gap-1 rounded-[18px] bg-[#fef2f2] border border-[#fecaca] px-2 py-0.5 text-[11px] font-medium text-[#991b1b]"
+      >
+        <svg
+          className="h-3 w-3 stroke-[2.5]"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+        <span>{label}</span>
+      </span>
     );
   }
 
   return (
     <span
-      title={`${label}: 알 수 없음 / 미확인`}
+      title={`${label}: ${language === 'ko' ? '알 수 없음' : 'Unknown'}`}
       className="inline-flex items-center gap-1 rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5] px-2 py-0.5 text-[11px] font-medium text-[#737373]"
     >
       <span className="text-[10px] font-mono leading-none">?</span>
@@ -76,15 +79,10 @@ export const TriStateIndicator: React.FC<{
 };
 
 // 2. Pricing Badge Helper
-const PRICING_LABELS: Record<PricingModel, string> = {
-  'Free & Open Source': '무료 & 오픈소스',
-  'Free': '무료',
-  'Freemium': '프리미엄',
-  'Paid': '유료',
-};
-
 export const PricingBadge: React.FC<{ pricing: PricingModel }> = ({ pricing }) => {
-  const label = PRICING_LABELS[pricing] || pricing;
+  const { t } = useLanguage();
+  const label = t.pricing[pricing] || pricing;
+
   switch (pricing) {
     case 'Free & Open Source':
       return (
@@ -117,11 +115,8 @@ export const PricingBadge: React.FC<{ pricing: PricingModel }> = ({ pricing }) =
 
 // 3. Status Dot Helper
 export const StatusIndicator: React.FC<{ status: ProjectStatus }> = ({ status }) => {
-  const STATUS_LABELS: Record<ProjectStatus, string> = {
-  Active: '활성',
-  Stale: '정체',
-  Discontinued: '중단',
-};
+  const { language, t } = useLanguage();
+  const label = t.status[status] || status;
 
   const getStatusConfig = () => {
     switch (status) {
@@ -129,20 +124,20 @@ export const StatusIndicator: React.FC<{ status: ProjectStatus }> = ({ status })
         return {
           dotClass: 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]',
           textClass: 'text-emerald-950 bg-emerald-50/90 border-emerald-200/80',
-          label: STATUS_LABELS.Active
+          label
         };
       case 'Stale':
         return {
           dotClass: 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]',
           textClass: 'text-amber-950 bg-amber-50/90 border-amber-200/80',
-          label: STATUS_LABELS.Stale
+          label
         };
       case 'Discontinued':
       default:
         return {
           dotClass: 'bg-[#737373]',
           textClass: 'text-[#171717] bg-[#f5f5f5]/90 border-[#e5e5e5]',
-          label: STATUS_LABELS[status] || '알 수 없음'
+          label: label || (language === 'ko' ? '알 수 없음' : 'Unknown')
         };
     }
   };
@@ -160,6 +155,7 @@ export const StatusIndicator: React.FC<{ status: ProjectStatus }> = ({ status })
 };
 
 export const ItemCard: React.FC<ItemCardProps> = ({ item, type, communityStats, onClick }) => {
+  const { language, t } = useLanguage();
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [logoError, setLogoError] = useState(false);
@@ -200,64 +196,54 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, type, communityStats, 
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-[#f5f5f5]">
-            <span className="text-[36px] font-bold text-[#0a0a0a] select-none tracking-tight">
-              {item.name.slice(0, 2).toUpperCase()}
+          <div className="flex h-full w-full items-center justify-center p-6 text-center">
+            <span className="text-[18px] font-bold tracking-tight text-[#a3a3a3] select-none">
+              {item.name}
             </span>
           </div>
         )}
       </div>
 
       {/* ============================================================ */}
-      {/* 2. Metadata Content & Specifications                         */}
+      {/* 2. Structured Metadata Body                                  */}
       {/* ============================================================ */}
       <div className="flex flex-1 flex-col p-4">
-        {/* Title & Short Description */}
-        <div className="mb-3">
-          <div className="flex items-baseline justify-between gap-2">
-            <h3 className="text-[17px] font-semibold text-[#0a0a0a] tracking-tight group-hover:text-black">
-              {item.name}
-            </h3>
-            {hasCommunity && (
-              <span
-                title={`커뮤니티 투표 ${communityStats?.voteCount}명 참여`}
-                className="text-[10px] font-medium text-[#737373] bg-[#f5f5f5] border border-[#e5e5e5] px-1.5 py-0.5 rounded-[8px]"
-              >
-                투표 {communityStats?.voteCount}
-              </span>
-            )}
-          </div>
-          <p className="mt-1 line-clamp-2 text-[13px] leading-snug text-[#737373]">
+        {/* Name & Short Description */}
+        <div className="flex flex-col gap-1 mb-3">
+          <h3 className="text-[16px] font-bold tracking-tight text-[#0a0a0a] group-hover:text-neutral-600 transition-colors">
+            {item.name}
+          </h3>
+          <p className="text-[12px] text-[#737373] line-clamp-2 leading-relaxed min-h-[34px]">
             {item.shortDesc}
           </p>
         </div>
 
-        {/* Curation / Community Ratings (3-Part Metric Strip) */}
+        {/* Ratings Pills (Adoption, Ease, Activity) */}
         {item.ratings && (
-          <div className="grid grid-cols-3 gap-1.5 mb-2.5 text-center">
+          <div className="grid grid-cols-3 gap-1.5 mb-3">
             <div
-              title={`대중성: ${displayAdoption}/5 ${hasCommunity ? '(커뮤니티 투표 평균)' : '(큐레이션 기준)'}`}
+              title={`${t.filter.adoptionLabel}: ${displayAdoption}/5`}
               className="flex flex-col items-center justify-center py-1.5 px-1 rounded-[12px] bg-[#fafafa] border border-[#e5e5e5] shadow-2xs"
             >
-              <span className="text-[10px] font-medium text-[#737373] tracking-tight">대중성</span>
+              <span className="text-[10px] font-medium text-[#737373] tracking-tight">{t.filter.adoptionLabel}</span>
               <span className="text-[13px] font-semibold text-[#0a0a0a] leading-none mt-1">
                 {displayAdoption}<span className="text-[10px] font-normal text-[#737373]">/5</span>
               </span>
             </div>
             <div
-              title={`편의성: ${displayEase}/5 ${hasCommunity ? '(커뮤니티 투표 평균)' : '(큐레이션 기준)'}`}
+              title={`${t.filter.easeOfUseLabel}: ${displayEase}/5`}
               className="flex flex-col items-center justify-center py-1.5 px-1 rounded-[12px] bg-[#fafafa] border border-[#e5e5e5] shadow-2xs"
             >
-              <span className="text-[10px] font-medium text-[#737373] tracking-tight">편의성</span>
+              <span className="text-[10px] font-medium text-[#737373] tracking-tight">{t.filter.easeOfUseLabel}</span>
               <span className="text-[13px] font-semibold text-[#0a0a0a] leading-none mt-1">
                 {displayEase}<span className="text-[10px] font-normal text-[#737373]">/5</span>
               </span>
             </div>
             <div
-              title={`활성도: ${displayActivity}/5 ${hasCommunity ? '(커뮤니티 투표 평균)' : '(큐레이션 기준)'}`}
+              title={`${t.ratings.activity}: ${displayActivity}/5`}
               className="flex flex-col items-center justify-center py-1.5 px-1 rounded-[12px] bg-[#fafafa] border border-[#e5e5e5] shadow-2xs"
             >
-              <span className="text-[10px] font-medium text-[#737373] tracking-tight">활성도</span>
+              <span className="text-[10px] font-medium text-[#737373] tracking-tight">{t.ratings.activity}</span>
               <span className="text-[13px] font-semibold text-[#0a0a0a] leading-none mt-1">
                 {displayActivity}<span className="text-[10px] font-normal text-[#737373]">/5</span>
               </span>
@@ -283,12 +269,12 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, type, communityStats, 
                 ))}
               </div>
 
-{/* Key Features TriState Badges */}
-               <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                 <TriStateIndicator value={frontend.hasBuiltInScraper} label="스크래퍼" />
-                 <TriStateIndicator value={frontend.touchOptimized} label="터치" />
-                 <TriStateIndicator value={frontend.gamepadOptimized} label="게임패드" />
-               </div>
+              {/* Key Features TriState Badges */}
+              <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                <TriStateIndicator value={frontend.hasBuiltInScraper} label={t.features.builtInScraper} />
+                <TriStateIndicator value={frontend.touchOptimized} label={t.features.touchOptimized} />
+                <TriStateIndicator value={frontend.gamepadOptimized} label={t.features.gamepadOptimized} />
+              </div>
             </>
           )}
 
@@ -319,10 +305,10 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, type, communityStats, 
         <div className="mt-4 pt-3 border-t border-[#e5e5e5] flex items-center justify-between">
           <div className="text-[12px] text-[#737373]">
             {isFrontend && frontend?.themeSupport && (
-              <span>테마: <strong className="text-[#0a0a0a] font-medium">{frontend.themeSupport}</strong></span>
+              <span>{language === 'ko' ? '테마' : 'Theme'}: <strong className="text-[#0a0a0a] font-medium">{frontend.themeSupport}</strong></span>
             )}
             {!isFrontend && cfw?.defaultFrontend && (
-              <span>기본 UI: <strong className="text-[#0a0a0a] font-medium">{cfw.defaultFrontend}</strong></span>
+              <span>{language === 'ko' ? '기본 UI' : 'Default UI'}: <strong className="text-[#0a0a0a] font-medium">{cfw.defaultFrontend}</strong></span>
             )}
           </div>
 
@@ -335,8 +321,8 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, type, communityStats, 
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={e => e.stopPropagation()}
-                title="공식 웹사이트"
-                aria-label="공식 웹사이트"
+                title={language === 'ko' ? '공식 웹사이트' : 'Official Website'}
+                aria-label="Official Website"
                 className="flex h-7 w-7 items-center justify-center rounded-[14px] border border-[#e5e5e5] bg-[#ffffff] text-[#737373] transition-colors hover:border-[#0a0a0a] hover:text-[#0a0a0a] hover:bg-[#f5f5f5]"
               >
                 <Globe size={14} strokeWidth={2} className="shrink-0" />
@@ -351,7 +337,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, type, communityStats, 
                 rel="noopener noreferrer"
                 onClick={e => e.stopPropagation()}
                 title={`GitHub: ${item.githubRepo}`}
-                aria-label="깃허브 저장소"
+                aria-label="GitHub Repository"
                 className="flex h-7 w-7 items-center justify-center rounded-[14px] border border-[#e5e5e5] bg-[#ffffff] text-[#737373] transition-colors hover:border-[#0a0a0a] hover:text-[#0a0a0a] hover:bg-[#f5f5f5]"
               >
                 <svg
@@ -378,8 +364,8 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, type, communityStats, 
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={e => e.stopPropagation()}
-                title="다운로드 / 릴리스"
-                aria-label="다운로드"
+                title={language === 'ko' ? '다운로드' : 'Download'}
+                aria-label="Download"
                 className="flex h-7 w-7 items-center justify-center rounded-[14px] bg-[#0a0a0a] text-[#fafafa] transition-opacity hover:opacity-90"
               >
                 <Download size={14} strokeWidth={2} className="shrink-0" />

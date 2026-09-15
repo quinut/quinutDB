@@ -2,6 +2,7 @@ import React from 'react';
 import { Search, X, RotateCcw, Check, SlidersHorizontal } from 'lucide-react';
 import { PricingModel, DeviceCategory } from '../types';
 import { MainTabType } from './TabNavigation';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export interface FilterState {
   search: string;
@@ -86,6 +87,7 @@ export const SidebarFilter: React.FC<SidebarFilterProps> = ({
   onCloseMobileDrawer,
   filteredCount,
 }) => {
+  const { language, t } = useLanguage();
   const activeCount = countActiveFilters(filters, activeTab);
 
   const handleSearchChange = (val: string) => {
@@ -116,8 +118,8 @@ export const SidebarFilter: React.FC<SidebarFilterProps> = ({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <SlidersHorizontal size={16} className="text-[#0a0a0a]" />
-<h2 className="text-[14px] font-semibold text-[#0a0a0a] tracking-tight">
-            필터
+          <h2 className="text-[14px] font-semibold text-[#0a0a0a] tracking-tight">
+            {language === 'ko' ? '필터' : 'Filters'}
           </h2>
           {activeCount > 0 && (
             <span className="rounded-[18px] bg-[#0a0a0a] px-2 py-0.5 text-[11px] font-medium text-[#fafafa]">
@@ -134,7 +136,7 @@ export const SidebarFilter: React.FC<SidebarFilterProps> = ({
               className="inline-flex items-center gap-1 rounded-[18px] border border-[#e5e5e5] bg-[#ffffff] px-2.5 py-1 text-[11px] font-medium text-[#737373] transition-colors hover:border-[#0a0a0a] hover:text-[#0a0a0a] cursor-pointer"
             >
               <RotateCcw size={11} />
-              <span>초기화</span>
+              <span>{language === 'ko' ? '초기화' : 'Reset'}</span>
             </button>
           )}
 
@@ -161,7 +163,7 @@ export const SidebarFilter: React.FC<SidebarFilterProps> = ({
           type="text"
           value={filters.search}
           onChange={(e) => handleSearchChange(e.target.value)}
-          placeholder="이름, 설명 검색..."
+          placeholder={language === 'ko' ? '이름, 설명 검색...' : 'Search by name, desc...'}
           className="w-full rounded-[18px] border border-[#e5e5e5] bg-[#f5f5f5] py-2 pl-9 pr-9 text-[13px] text-[#0a0a0a] placeholder-[#737373] transition-colors focus:border-[#0a0a0a] focus:bg-[#ffffff] focus:outline-none"
         />
         {filters.search && (
@@ -178,11 +180,11 @@ export const SidebarFilter: React.FC<SidebarFilterProps> = ({
 
       {/* 3. Pricing Tier Filter (Common) */}
       <div className="flex flex-col gap-2.5">
-<span className="text-[12px] font-semibold text-[#737373] uppercase tracking-wider">
-          가격 정책
+        <span className="text-[12px] font-semibold text-[#737373] uppercase tracking-wider">
+          {t.filter.pricingTitle}
         </span>
         <div className="flex flex-wrap gap-1.5">
-{PRICING_OPTIONS.map((price) => {
+          {PRICING_OPTIONS.map((price) => {
             const isSelected = filters.pricing.includes(price);
             return (
               <button
@@ -195,7 +197,7 @@ export const SidebarFilter: React.FC<SidebarFilterProps> = ({
                     : 'bg-[#ffffff] text-[#171717] border border-[#e5e5e5] hover:border-[#737373]'
                 }`}
               >
-                {PRICING_LABELS[price] || price}
+                {t.pricing[price] || price}
               </button>
             );
           })}
@@ -205,23 +207,25 @@ export const SidebarFilter: React.FC<SidebarFilterProps> = ({
       {/* Curation Ratings Filter (Common) */}
       <div className="flex flex-col gap-3 border-t border-[#e5e5e5] pt-4">
         <span className="text-[12px] font-semibold text-[#737373] uppercase tracking-wider">
-          큐레이션 점수 (Ratings)
+          {t.filter.ratingsTitle}
         </span>
 
         {/* Min Adoption */}
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] text-[#737373] font-medium">대중성 (Adoption)</span>
+            <span className="text-[11px] text-[#737373] font-medium">{t.filter.adoptionLabel}</span>
             {filters.minAdoption > 0 && (
-              <span className="text-[10px] font-semibold text-[#0a0a0a]">{filters.minAdoption}점 이상</span>
+              <span className="text-[10px] font-semibold text-[#0a0a0a]">
+                {language === 'ko' ? `${filters.minAdoption}점 이상` : `${filters.minAdoption}+`}
+              </span>
             )}
           </div>
           <div className="grid grid-cols-4 gap-1">
             {[
-              { label: '전체', value: 0 },
-              { label: '3+ 점', value: 3 },
-              { label: '4+ 점', value: 4 },
-              { label: '5점', value: 5 },
+              { label: language === 'ko' ? '전체' : 'All', value: 0 },
+              { label: language === 'ko' ? '3점+' : '3+', value: 3 },
+              { label: language === 'ko' ? '4점+' : '4+', value: 4 },
+              { label: language === 'ko' ? '5점' : '5', value: 5 },
             ].map((opt) => {
               const isSelected = filters.minAdoption === opt.value;
               return (
@@ -245,17 +249,19 @@ export const SidebarFilter: React.FC<SidebarFilterProps> = ({
         {/* Min Ease of Use */}
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] text-[#737373] font-medium">설정 편의성 (Ease of Use)</span>
+            <span className="text-[11px] text-[#737373] font-medium">{t.filter.easeOfUseLabel}</span>
             {filters.minEaseOfUse > 0 && (
-              <span className="text-[10px] font-semibold text-[#0a0a0a]">{filters.minEaseOfUse}점 이상</span>
+              <span className="text-[10px] font-semibold text-[#0a0a0a]">
+                {language === 'ko' ? `${filters.minEaseOfUse}점 이상` : `${filters.minEaseOfUse}+`}
+              </span>
             )}
           </div>
           <div className="grid grid-cols-4 gap-1">
             {[
-              { label: '전체', value: 0 },
-              { label: '3+ 점', value: 3 },
-              { label: '4+ 점', value: 4 },
-              { label: '5점', value: 5 },
+              { label: language === 'ko' ? '전체' : 'All', value: 0 },
+              { label: language === 'ko' ? '3점+' : '3+', value: 3 },
+              { label: language === 'ko' ? '4점+' : '4+', value: 4 },
+              { label: language === 'ko' ? '5점' : '5', value: 5 },
             ].map((opt) => {
               const isSelected = filters.minEaseOfUse === opt.value;
               return (
@@ -280,9 +286,9 @@ export const SidebarFilter: React.FC<SidebarFilterProps> = ({
       {/* 4. Frontend Filters Section */}
       {showFrontendFilters && (
         <div className="flex flex-col gap-4 border-t border-[#e5e5e5] pt-4">
-<div className="flex items-center justify-between">
+          <div className="flex items-center justify-between">
             <span className="text-[12px] font-semibold text-[#737373] uppercase tracking-wider">
-              플랫폼
+              {t.filter.platformsTitle}
             </span>
           </div>
           <div className="flex flex-wrap gap-1.5">
@@ -307,12 +313,12 @@ export const SidebarFilter: React.FC<SidebarFilterProps> = ({
 
           {/* Frontend Feature Toggles */}
           <div className="flex flex-col gap-2 pt-1">
-<span className="text-[12px] font-semibold text-[#737373] uppercase tracking-wider">
-              프론트엔드 기능
+            <span className="text-[12px] font-semibold text-[#737373] uppercase tracking-wider">
+              {t.filter.frontendFeaturesTitle}
             </span>
 
             <div className="flex flex-col gap-2">
-<label className="group flex items-center gap-2.5 text-[13px] text-[#171717] cursor-pointer select-none">
+              <label className="group flex items-center gap-2.5 text-[13px] text-[#171717] cursor-pointer select-none">
                 <div
                   onClick={() => handleToggleBoolean('hasBuiltInScraper')}
                   className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-[5px] border transition-colors ${
@@ -324,11 +330,11 @@ export const SidebarFilter: React.FC<SidebarFilterProps> = ({
                   {filters.hasBuiltInScraper && <Check size={11} strokeWidth={3} />}
                 </div>
                 <span onClick={() => handleToggleBoolean('hasBuiltInScraper')}>
-                  내장 스크래퍼
+                  {t.features.builtInScraper}
                 </span>
               </label>
 
-<label className="group flex items-center gap-2.5 text-[13px] text-[#171717] cursor-pointer select-none">
+              <label className="group flex items-center gap-2.5 text-[13px] text-[#171717] cursor-pointer select-none">
                 <div
                   onClick={() => handleToggleBoolean('touchOptimized')}
                   className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-[5px] border transition-colors ${
@@ -340,11 +346,11 @@ export const SidebarFilter: React.FC<SidebarFilterProps> = ({
                   {filters.touchOptimized && <Check size={11} strokeWidth={3} />}
                 </div>
                 <span onClick={() => handleToggleBoolean('touchOptimized')}>
-                  터치 최적화
+                  {t.features.touchOptimized}
                 </span>
               </label>
 
-<label className="group flex items-center gap-2.5 text-[13px] text-[#171717] cursor-pointer select-none">
+              <label className="group flex items-center gap-2.5 text-[13px] text-[#171717] cursor-pointer select-none">
                 <div
                   onClick={() => handleToggleBoolean('gamepadOptimized')}
                   className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-[5px] border transition-colors ${
@@ -356,11 +362,11 @@ export const SidebarFilter: React.FC<SidebarFilterProps> = ({
                   {filters.gamepadOptimized && <Check size={11} strokeWidth={3} />}
                 </div>
                 <span onClick={() => handleToggleBoolean('gamepadOptimized')}>
-                  게임패드 최적화
+                  {t.features.gamepadOptimized}
                 </span>
               </label>
 
-<label className="group flex items-center gap-2.5 text-[13px] text-[#171717] cursor-pointer select-none">
+              <label className="group flex items-center gap-2.5 text-[13px] text-[#171717] cursor-pointer select-none">
                 <div
                   onClick={() => handleToggleBoolean('canReplaceHomeLauncher')}
                   className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-[5px] border transition-colors ${
@@ -372,7 +378,7 @@ export const SidebarFilter: React.FC<SidebarFilterProps> = ({
                   {filters.canReplaceHomeLauncher && <Check size={11} strokeWidth={3} />}
                 </div>
                 <span onClick={() => handleToggleBoolean('canReplaceHomeLauncher')}>
-                  홈 런처 대체 가능
+                  {t.features.canReplaceHomeLauncher}
                 </span>
               </label>
             </div>
@@ -383,11 +389,11 @@ export const SidebarFilter: React.FC<SidebarFilterProps> = ({
       {/* 5. CFW / OS Filters Section */}
       {showCFWFilters && (
         <div className="flex flex-col gap-4 border-t border-[#e5e5e5] pt-4">
-<span className="text-[12px] font-semibold text-[#737373] uppercase tracking-wider">
-            기기 카테고리
+          <span className="text-[12px] font-semibold text-[#737373] uppercase tracking-wider">
+            {t.filter.categoryTitle}
           </span>
           <div className="flex flex-wrap gap-1.5">
-{CATEGORY_OPTIONS.map((cat) => {
+            {CATEGORY_OPTIONS.map((cat) => {
               const isSelected = filters.categories.includes(cat);
               return (
                 <button
@@ -400,7 +406,7 @@ export const SidebarFilter: React.FC<SidebarFilterProps> = ({
                       : 'bg-[#ffffff] text-[#171717] border border-[#e5e5e5] hover:border-[#737373]'
                   }`}
                 >
-                  {CATEGORY_LABELS[cat] || cat}
+                  {t.category[cat] || cat}
                 </button>
               );
             })}
@@ -426,12 +432,12 @@ export const SidebarFilter: React.FC<SidebarFilterProps> = ({
 
           {/* Mobile Apply Button */}
           <div className="mt-8 pt-4 border-t border-[#e5e5e5]">
-<button
+            <button
               type="button"
               onClick={onCloseMobileDrawer}
               className="w-full rounded-[18px] bg-[#0a0a0a] py-2.5 text-[13px] font-medium text-[#fafafa] transition-opacity hover:opacity-90 cursor-pointer"
             >
-              결과 {filteredCount}개 보기
+              {t.filter.showResults.replace('{count}', String(filteredCount))}
             </button>
           </div>
         </div>

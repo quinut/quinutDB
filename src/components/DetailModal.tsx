@@ -16,6 +16,7 @@ import { FrontendItem, OSFirmwareItem, ScoreValue } from '../types';
 import { TriStateIndicator, PricingBadge, StatusIndicator } from './ItemCard';
 import { useAuth } from '../contexts/AuthContext';
 import { useItemCommunity } from '../hooks/useItemCommunity';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export interface DetailModalProps {
   item: FrontendItem | OSFirmwareItem | null;
@@ -23,17 +24,35 @@ export interface DetailModalProps {
   onClose: () => void;
 }
 
-const getAdoptionDesc = (score: number) => {
+const getAdoptionDesc = (score: number, lang: 'ko' | 'en') => {
+  if (lang === 'en') {
+    switch (score) {
+      case 5: return 'Industry Standard';
+      case 4: return 'Widely Adopted';
+      case 3: return 'Established Base';
+      case 2: return 'Emerging & Niche';
+      default: return 'Specialized / Early Stage';
+    }
+  }
   switch (score) {
     case 5: return '사실상 표준';
     case 4: return '높은 대중성';
     case 3: return '안정적 생태계';
-    case 2: return '성장/틈새';
-    default: return '소수/신생';
+    case 2: return '성장 및 틈새';
+    default: return '소수 및 신생';
   }
 };
 
-const getEaseOfUseDesc = (score: number) => {
+const getEaseOfUseDesc = (score: number, lang: 'ko' | 'en') => {
+  if (lang === 'en') {
+    switch (score) {
+      case 5: return 'Zero Setup';
+      case 4: return 'Simple GUI Setup';
+      case 3: return 'Standard Setup';
+      case 2: return 'Manual Configuration';
+      default: return 'Advanced Level';
+    }
+  }
   switch (score) {
     case 5: return '원클릭 완벽';
     case 4: return '간편한 GUI 설정';
@@ -43,18 +62,28 @@ const getEaseOfUseDesc = (score: number) => {
   }
 };
 
-const getActivityDesc = (score: number) => {
+const getActivityDesc = (score: number, lang: 'ko' | 'en') => {
+  if (lang === 'en') {
+    switch (score) {
+      case 5: return 'Very Active';
+      case 4: return 'Regular Updates';
+      case 3: return 'Mature Stage';
+      case 2: return 'Infrequent Updates';
+      default: return 'Dormant / Discontinued';
+    }
+  }
   switch (score) {
     case 5: return '매우 활발';
     case 4: return '정기적 업데이트';
     case 3: return '안정화 단계';
     case 2: return '업데이트 저조';
-    default: return '방치 / 중단';
+    default: return '방치 및 중단';
   }
 };
 
 export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose }) => {
   const { user, openAuthModal } = useAuth();
+  const { language, t } = useLanguage();
   const itemId = item?.id || '';
 
   const {
@@ -255,19 +284,21 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
                 <div className="flex items-center justify-between mb-2.5">
                   <div className="flex items-center gap-2">
                     <h4 className="text-[11px] font-semibold uppercase tracking-wider text-[#737373]">
-                      큐레이션 & 커뮤니티 평가
+                      {language === 'ko' ? '큐레이션 및 커뮤니티 평가' : 'Curation & Community Ratings'}
                     </h4>
                     {stats && stats.voteCount > 0 ? (
                       <span className="rounded-[18px] bg-[#0a0a0a] text-[#ffffff] px-2 py-0.2 text-[10px] font-medium">
-                        커뮤니티 투표 {stats.voteCount}명
+                        {language === 'ko' ? `커뮤니티 투표 ${stats.voteCount}명` : `Votes: ${stats.voteCount}`}
                       </span>
                     ) : (
                       <span className="rounded-[18px] bg-[#f5f5f5] text-[#737373] border border-[#e5e5e5] px-2 py-0.2 text-[10px] font-medium">
-                        큐레이션 기준 점수
+                        {language === 'ko' ? '큐레이션 기준 점수' : 'Curated Score'}
                       </span>
                     )}
                   </div>
-                  <span className="text-[11px] text-[#737373]">1–5 표준 벤치마크</span>
+                  <span className="text-[11px] text-[#737373]">
+                    {language === 'ko' ? '1–5 표준 척도' : '1–5 Benchmark'}
+                  </span>
                 </div>
 
                 {(() => {
@@ -281,7 +312,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
                       {/* 1. Adoption */}
                       <div className="flex flex-col justify-between p-3.5 rounded-[16px] border border-[#e5e5e5] bg-[#fafafa]">
                         <div className="flex items-center justify-between">
-                          <span className="text-[12px] font-medium text-[#737373]">대중성 & 생태계</span>
+                          <span className="text-[12px] font-medium text-[#737373]">{t.ratings.adoption}</span>
                           <div className="flex items-baseline gap-0.5">
                             <span className="text-[15px] font-bold text-[#0a0a0a]">
                               {hasCommunity ? displayAdoption.toFixed(1) : displayAdoption}
@@ -301,14 +332,14 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
                           ))}
                         </div>
                         <span className="text-[11px] text-[#171717] font-medium leading-tight">
-                          {getAdoptionDesc(Math.round(displayAdoption))}
+                          {getAdoptionDesc(Math.round(displayAdoption), language)}
                         </span>
                       </div>
 
                       {/* 2. Ease of Use */}
                       <div className="flex flex-col justify-between p-3.5 rounded-[16px] border border-[#e5e5e5] bg-[#fafafa]">
                         <div className="flex items-center justify-between">
-                          <span className="text-[12px] font-medium text-[#737373]">설정 & 편의성</span>
+                          <span className="text-[12px] font-medium text-[#737373]">{t.ratings.easeOfUse}</span>
                           <div className="flex items-baseline gap-0.5">
                             <span className="text-[15px] font-bold text-[#0a0a0a]">
                               {hasCommunity ? displayEase.toFixed(1) : displayEase}
@@ -328,14 +359,14 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
                           ))}
                         </div>
                         <span className="text-[11px] text-[#171717] font-medium leading-tight">
-                          {getEaseOfUseDesc(Math.round(displayEase))}
+                          {getEaseOfUseDesc(Math.round(displayEase), language)}
                         </span>
                       </div>
 
                       {/* 3. Activity */}
                       <div className="flex flex-col justify-between p-3.5 rounded-[16px] border border-[#e5e5e5] bg-[#fafafa]">
                         <div className="flex items-center justify-between">
-                          <span className="text-[12px] font-medium text-[#737373]">업데이트 활성도</span>
+                          <span className="text-[12px] font-medium text-[#737373]">{t.ratings.activity}</span>
                           <div className="flex items-baseline gap-0.5">
                             <span className="text-[15px] font-bold text-[#0a0a0a]">
                               {hasCommunity ? displayActivity.toFixed(1) : displayActivity}
@@ -355,7 +386,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
                           ))}
                         </div>
                         <span className="text-[11px] text-[#171717] font-medium leading-tight">
-                          {getActivityDesc(Math.round(displayActivity))}
+                          {getActivityDesc(Math.round(displayActivity), language)}
                         </span>
                       </div>
                     </div>
@@ -372,11 +403,13 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
                     <div className="flex items-center gap-2">
                       <Star size={15} className={myRating ? "text-[#0a0a0a] fill-[#0a0a0a]" : "text-[#737373]"} />
                       <span className="text-[13px] font-semibold text-[#0a0a0a]">
-                        {myRating ? '내 평가 점수 수정하기' : '이 항목 평가 참여하기 (투표)'}
+                        {myRating
+                          ? (language === 'ko' ? '내 평가 점수 수정하기' : 'Edit My Rating')
+                          : (language === 'ko' ? '이 항목 평가 참여하기' : 'Vote & Rate this Item')}
                       </span>
                       {myRating && (
                         <span className="rounded-[12px] bg-[#0a0a0a] text-[#ffffff] px-2 py-0.5 text-[10px] font-medium">
-                          내 투표 완료
+                          {language === 'ko' ? '내 투표 완료' : 'Voted'}
                         </span>
                       )}
                     </div>
@@ -388,16 +421,16 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
                       {voteSubmitted && (
                         <div className="flex items-center gap-2 p-2.5 rounded-[12px] bg-[#f0fdf4] border border-[#bbf7d0] text-[#166534] text-[12px] font-medium">
                           <CheckCircle2 size={15} />
-                          <span>평가가 성공적으로 저장되었습니다!</span>
+                          <span>{language === 'ko' ? '평가가 성공적으로 저장되었습니다.' : 'Rating successfully saved.'}</span>
                         </div>
                       )}
 
                       {/* 1. Adoption Selection */}
                       <div className="flex flex-col gap-1.5">
                         <div className="flex items-center justify-between">
-                          <span className="text-[12px] font-medium text-[#0a0a0a]">1. 대중성 & 생태계 규모</span>
+                          <span className="text-[12px] font-medium text-[#0a0a0a]">1. {t.ratings.adoption}</span>
                           <span className="text-[12px] font-semibold text-[#0a0a0a]">
-                            {voteAdoption}점 - {getAdoptionDesc(voteAdoption)}
+                            {voteAdoption} - {getAdoptionDesc(voteAdoption, language)}
                           </span>
                         </div>
                         <div className="grid grid-cols-5 gap-1.5">
@@ -421,9 +454,9 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
                       {/* 2. Ease of Use Selection */}
                       <div className="flex flex-col gap-1.5">
                         <div className="flex items-center justify-between">
-                          <span className="text-[12px] font-medium text-[#0a0a0a]">2. 설정 난이도 & 편의성</span>
+                          <span className="text-[12px] font-medium text-[#0a0a0a]">2. {t.ratings.easeOfUse}</span>
                           <span className="text-[12px] font-semibold text-[#0a0a0a]">
-                            {voteEase}점 - {getEaseOfUseDesc(voteEase)}
+                            {voteEase} - {getEaseOfUseDesc(voteEase, language)}
                           </span>
                         </div>
                         <div className="grid grid-cols-5 gap-1.5">
@@ -447,9 +480,9 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
                       {/* 3. Activity Selection */}
                       <div className="flex flex-col gap-1.5">
                         <div className="flex items-center justify-between">
-                          <span className="text-[12px] font-medium text-[#0a0a0a]">3. 업데이트 활성도</span>
+                          <span className="text-[12px] font-medium text-[#0a0a0a]">3. {t.ratings.activity}</span>
                           <span className="text-[12px] font-semibold text-[#0a0a0a]">
-                            {voteActivity}점 - {getActivityDesc(voteActivity)}
+                            {voteActivity} - {getActivityDesc(voteActivity, language)}
                           </span>
                         </div>
                         <div className="grid grid-cols-5 gap-1.5">
@@ -504,23 +537,23 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
             {isFrontend && frontend && (
               <div>
                 <h4 className="text-[11px] font-semibold uppercase tracking-wider text-[#737373] mb-3">
-                  사양 & 기능 매트릭스
+                  {language === 'ko' ? '기능 및 사양' : 'Feature Matrix'}
                 </h4>
                 <div className="grid grid-cols-2 gap-2.5">
                   <div className="flex items-center justify-between p-3 rounded-[16px] border border-[#e5e5e5] bg-[#fafafa]">
-                    <span className="text-[13px] text-[#0a0a0a] font-medium">Built-in Scraper</span>
+                    <span className="text-[13px] text-[#0a0a0a] font-medium">{t.features.builtInScraper}</span>
                     <TriStateIndicator value={frontend.hasBuiltInScraper} label="" />
                   </div>
                   <div className="flex items-center justify-between p-3 rounded-[16px] border border-[#e5e5e5] bg-[#fafafa]">
-                    <span className="text-[13px] text-[#0a0a0a] font-medium">Touch Optimized</span>
+                    <span className="text-[13px] text-[#0a0a0a] font-medium">{t.features.touchOptimized}</span>
                     <TriStateIndicator value={frontend.touchOptimized} label="" />
                   </div>
                   <div className="flex items-center justify-between p-3 rounded-[16px] border border-[#e5e5e5] bg-[#fafafa]">
-                    <span className="text-[13px] text-[#0a0a0a] font-medium">Gamepad Optimized</span>
+                    <span className="text-[13px] text-[#0a0a0a] font-medium">{t.features.gamepadOptimized}</span>
                     <TriStateIndicator value={frontend.gamepadOptimized} label="" />
                   </div>
                   <div className="flex items-center justify-between p-3 rounded-[16px] border border-[#e5e5e5] bg-[#fafafa]">
-                    <span className="text-[13px] text-[#0a0a0a] font-medium">Replace Home Launcher</span>
+                    <span className="text-[13px] text-[#0a0a0a] font-medium">{t.features.canReplaceHomeLauncher}</span>
                     <TriStateIndicator value={frontend.canReplaceHomeLauncher} label="" />
                   </div>
                 </div>
@@ -536,7 +569,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
               {/* Overview Narrative */}
               <div>
                 <h4 className="text-[11px] font-semibold uppercase tracking-wider text-[#737373] mb-2.5">
-                  소개 & 개요
+                  {t.detail.overview}
                 </h4>
                 <div className="rounded-[18px] bg-[#ffffff] p-5 border border-[#e5e5e5] shadow-2xs">
                   <p className="text-[14px] sm:text-[15px] leading-relaxed text-[#171717]">
@@ -548,14 +581,14 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
               {/* Compatibility & Platform Specs */}
               <div>
                 <h4 className="text-[11px] font-semibold uppercase tracking-wider text-[#737373] mb-2.5">
-                  환경 & 호환성
+                  {language === 'ko' ? '호환성 및 환경' : 'Compatibility & Environment'}
                 </h4>
 
                 {isFrontend && frontend && (
                   <div className="rounded-[18px] bg-[#ffffff] p-5 border border-[#e5e5e5] flex flex-col gap-3.5 shadow-2xs">
                     <div>
                       <span className="text-[12px] text-[#737373] block mb-1.5 font-medium">
-                        지원 OS / CFW
+                        {t.detail.supportedPlatforms}
                       </span>
                       <div className="flex flex-wrap gap-1.5">
                         {frontend.supportedPlatforms.map((platform: string) => (
@@ -570,9 +603,9 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
                     </div>
 
                     <div className="border-t border-[#e5e5e5] pt-3 flex items-center justify-between">
-                      <span className="text-[12px] text-[#737373] font-medium">테마 커스터마이징</span>
+                      <span className="text-[12px] text-[#737373] font-medium">{t.detail.themeSupport}</span>
                       <span className="rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5] px-2.5 py-0.5 text-[12px] font-medium text-[#0a0a0a]">
-                        {frontend.themeSupport} Engine
+                        {frontend.themeSupport}
                       </span>
                     </div>
                   </div>
@@ -581,19 +614,19 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
                 {!isFrontend && cfw && (
                   <div className="rounded-[18px] bg-[#ffffff] p-5 border border-[#e5e5e5] flex flex-col gap-3.5 shadow-2xs">
                     <div>
-                      <span className="text-[12px] text-[#737373] block mb-1 font-medium">기반 커널 / OS</span>
+                      <span className="text-[12px] text-[#737373] block mb-1 font-medium">{t.detail.baseSystem}</span>
                       <span className="text-[13px] text-[#0a0a0a] font-medium">{cfw.baseSystem}</span>
                     </div>
 
                     {cfw.exploitType && (
                       <div className="border-t border-[#e5e5e5] pt-3">
-                        <span className="text-[12px] text-[#737373] block mb-1 font-medium">익스플로잇 / 부트 방식</span>
+                        <span className="text-[12px] text-[#737373] block mb-1 font-medium">{t.detail.exploitType}</span>
                         <span className="text-[13px] text-[#0a0a0a] font-medium">{cfw.exploitType}</span>
                       </div>
                     )}
 
                     <div className="border-t border-[#e5e5e5] pt-3">
-                      <span className="text-[12px] text-[#737373] block mb-1.5 font-medium">대상 기기</span>
+                      <span className="text-[12px] text-[#737373] block mb-1.5 font-medium">{t.detail.targetDevices}</span>
                       <div className="flex flex-wrap gap-1.5">
                         {cfw.targetDevices.map((device: string) => (
                           <span
@@ -613,13 +646,15 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
                 <div className="flex items-center justify-between mb-2.5">
                   <div className="flex items-center gap-2">
                     <h4 className="text-[11px] font-semibold uppercase tracking-wider text-[#737373]">
-                      커뮤니티 리뷰
+                      {t.detail.reviews}
                     </h4>
                     <span className="rounded-[18px] bg-[#0a0a0a] px-2 py-0.2 text-[11px] font-medium text-[#fafafa]">
                       {reviews.length}
                     </span>
                   </div>
-                  <span className="text-[11px] text-[#737373]">유저 실사용 리뷰</span>
+                  <span className="text-[11px] text-[#737373]">
+                    {language === 'ko' ? '사용자 실사용 리뷰' : 'User Reviews'}
+                  </span>
                 </div>
 
                 <div className="rounded-[18px] bg-[#ffffff] p-4 border border-[#e5e5e5] shadow-2xs flex flex-col gap-3.5">
@@ -630,8 +665,8 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
                       onChange={(e) => setReviewContent(e.target.value)}
                       placeholder={
                         user
-                          ? '이 항목의 장단점, 실사용 팁, 세팅 노하우를 공유해 보세요...'
-                          : '리뷰를 작성하려면 먼저 로그인해 주세요...'
+                          ? (language === 'ko' ? '이 항목의 장단점, 실사용 팁, 세팅 노하우를 공유해 보세요...' : 'Share your experience, tips, or feedback...')
+                          : (language === 'ko' ? '리뷰를 작성하려면 먼저 로그인해 주세요...' : 'Sign in to write a review...')
                       }
                       rows={3}
                       maxLength={1000}
@@ -645,22 +680,22 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
                     {reviewSubmitted && (
                       <p className="inline-flex items-center gap-1 text-[12px] text-emerald-600 font-medium px-1">
                         <CheckCircle2 size={14} />
-                        <span>리뷰가 성공적으로 등록되었습니다.</span>
+                        <span>{t.detail.reviewSuccess}</span>
                       </p>
                     )}
 
                     <div className="flex items-center justify-between">
                       <span className="text-[11px] text-[#737373]">
-                        {reviewContent.length}/1000자
+                        {reviewContent.length}/1000{language === 'ko' ? '자' : ''}
                       </span>
                       {!user ? (
                         <button
                           type="button"
-                          onClick={() => openAuthModal('리뷰 작성을 위해 로그인이 필요합니다.')}
+                          onClick={() => openAuthModal(t.detail.loginToReview)}
                           className="inline-flex items-center gap-1.5 rounded-[18px] bg-[#0a0a0a] px-3.5 py-1.5 text-[12px] font-medium text-[#fafafa] hover:opacity-90 transition-opacity cursor-pointer"
                         >
                           <LogIn size={13} />
-                          <span>로그인 후 작성</span>
+                          <span>{language === 'ko' ? '로그인 후 작성' : 'Sign in to review'}</span>
                         </button>
                       ) : (
                         <button
@@ -669,7 +704,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
                           className="inline-flex items-center gap-1.5 rounded-[18px] bg-[#0a0a0a] px-4 py-1.5 text-[12px] font-medium text-[#fafafa] hover:opacity-90 disabled:opacity-40 transition-opacity cursor-pointer"
                         >
                           <Send size={13} />
-                          <span>{submittingReview ? '등록 중...' : '리뷰 등록'}</span>
+                          <span>{submittingReview ? (language === 'ko' ? '등록 중...' : 'Submitting...') : (language === 'ko' ? '리뷰 등록' : 'Submit Review')}</span>
                         </button>
                       )}
                     </div>
@@ -679,7 +714,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
                   <div className="border-t border-[#e5e5e5] pt-3 flex flex-col gap-2.5 max-h-[220px] overflow-y-auto pr-1">
                     {reviews.length === 0 ? (
                       <div className="py-4 text-center text-[12px] text-[#737373]">
-                        아직 작성된 리뷰가 없습니다. 첫 리뷰를 작성해 보세요!
+                        {t.detail.noReviews}
                       </div>
                     ) : (
                       reviews.map((rev) => (
@@ -738,7 +773,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
             {/* Quick Action Links Footer */}
             <div className="border-t border-[#e5e5e5] pt-5 flex flex-col gap-2.5">
               <h4 className="text-[11px] font-semibold uppercase tracking-wider text-[#737373]">
-                외부 리소스
+                {language === 'ko' ? '외부 링크' : 'External Links'}
               </h4>
               <div className="flex flex-col gap-2">
                 {item.downloadUrl && (
@@ -748,7 +783,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
                     rel="noopener noreferrer"
                     className="inline-flex h-[42px] w-full items-center justify-center gap-2 rounded-[18px] bg-[#0a0a0a] px-5 text-[14px] font-medium text-[#fafafa] hover:opacity-90 transition-opacity"
                   >
-                    <span>다운로드</span>
+                    <span>{language === 'ko' ? '다운로드' : 'Download'}</span>
                     <Download size={16} strokeWidth={2} className="shrink-0" />
                   </a>
                 )}
@@ -762,7 +797,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
                       className="inline-flex h-[40px] items-center justify-center gap-2 rounded-[18px] border border-[#e5e5e5] bg-[#ffffff] px-3 text-[13px] font-medium text-[#0a0a0a] hover:bg-[#f5f5f5] transition-colors"
                     >
                       <Globe size={15} strokeWidth={2} className="shrink-0" />
-                      <span className="truncate">웹사이트</span>
+                      <span className="truncate">{language === 'ko' ? '공식 웹사이트' : 'Website'}</span>
                     </a>
                   )}
 
@@ -786,7 +821,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
                           d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
                         />
                       </svg>
-                      <span className="truncate">깃허브</span>
+                      <span className="truncate">GitHub</span>
                     </a>
                   )}
                 </div>

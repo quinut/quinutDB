@@ -14,6 +14,7 @@ import { useCatalog } from './hooks/useCatalog';
 import { SlidersHorizontal, Search, RotateCcw, ChevronDown, Database, PlusCircle, Layers } from 'lucide-react';
 import EditPage from './app/edit/page';
 import { useAllRatingStats } from './hooks/useItemCommunity';
+import { useLanguage } from './contexts/LanguageContext';
 
 type SortOption =
   | 'adoption-desc'
@@ -24,6 +25,7 @@ type SortOption =
   | 'name-desc';
 
 export default function App() {
+  const { language, t } = useLanguage();
   const [currentPath, setCurrentPath] = useState(() => {
     if (typeof window !== 'undefined') {
       return window.location.pathname;
@@ -264,15 +266,15 @@ export default function App() {
         {/* Top Control Bar: Title & Mobile Filter Trigger */}
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
-<h2 className="text-[18px] sm:text-[20px] font-semibold text-[#0a0a0a] tracking-tight">
-              프론트엔드 & 런처
+            <h2 className="text-[18px] sm:text-[20px] font-semibold text-[#0a0a0a] tracking-tight">
+              {t.tabs.frontends}
             </h2>
             <span className="rounded-[18px] bg-[#0a0a0a] px-2.5 py-0.5 text-[11px] font-medium text-[#fafafa]">
               {totalFilteredCount}
             </span>
             {isFromDatabase ? (
               <span
-                title="Supabase 실시간 데이터베이스 연동됨"
+                title={language === 'ko' ? 'Supabase 실시간 데이터베이스 연동됨' : 'Connected to live Supabase database'}
                 className="inline-flex items-center gap-1.5 rounded-[18px] bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 text-[11px] font-medium shadow-2xs"
               >
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -280,7 +282,7 @@ export default function App() {
               </span>
             ) : (
               <span
-                title="로컬 정적 큐레이션 데이터"
+                title={language === 'ko' ? '로컬 정적 큐레이션 데이터' : 'Local static curated data'}
                 className="inline-flex items-center gap-1.5 rounded-[18px] bg-[#ffffff] text-[#737373] border border-[#e5e5e5] px-2 py-0.5 text-[11px] font-medium shadow-2xs"
               >
                 <span>Curated</span>
@@ -295,7 +297,7 @@ export default function App() {
             className="lg:hidden inline-flex items-center gap-2 rounded-[18px] border border-[#e5e5e5] bg-[#ffffff] px-3.5 py-1.5 text-[13px] font-medium text-[#0a0a0a] hover:bg-[#f5f5f5] transition-colors cursor-pointer shadow-xs shrink-0"
           >
             <SlidersHorizontal size={15} />
-            <span>필터</span>
+            <span>{language === 'ko' ? '필터' : 'Filters'}</span>
             {activeFilterCount > 0 && (
               <span className="rounded-[18px] bg-[#0a0a0a] px-2 py-0.2 text-[11px] font-medium text-[#fafafa]">
                 {activeFilterCount}
@@ -337,27 +339,27 @@ export default function App() {
           >
             {/* Top Utility Bar (Result Count & Sort Dropdown) */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#ffffff] px-4 py-3 rounded-[18px] border border-[#e5e5e5] shadow-xs">
-<span className="text-[13px] text-[#737373]">
-                <strong className="text-[#0a0a0a] font-semibold">{totalFilteredCount}</strong> / {totalCountForTab}개 표시
-                {activeFilterCount > 0 && ' (필터링됨)'}
+              <span className="text-[13px] text-[#737373]">
+                <strong className="text-[#0a0a0a] font-semibold">{totalFilteredCount}</strong> / {totalCountForTab}{language === 'ko' ? '개 표시' : ' shown'}
+                {activeFilterCount > 0 && (language === 'ko' ? ' (필터링됨)' : ' (filtered)')}
               </span>
 
               {/* Sort Dropdown */}
               <div className="flex items-center gap-2 self-end sm:self-auto">
-                <span className="text-[12px] font-medium text-[#737373]">정렬:</span>
+                <span className="text-[12px] font-medium text-[#737373]">{language === 'ko' ? '정렬' : 'Sort'}:</span>
                 <div className="relative inline-flex items-center">
-<select
+                  <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value as SortOption)}
-                    aria-label="정렬 옵션"
+                    aria-label="Sort options"
                     className="appearance-none rounded-[18px] border border-[#e5e5e5] bg-[#fafafa] py-1 pl-3 pr-8 text-[12px] font-medium text-[#0a0a0a] hover:border-[#737373] focus:border-[#0a0a0a] focus:outline-none cursor-pointer transition-colors"
                   >
-                    <option value="adoption-desc">인기 / 대중성순</option>
-                    <option value="ease-desc">설정 편의성순</option>
-                    <option value="activity-desc">업데이트 활발한 순</option>
-                    <option value="status">상태순 (활성 우선)</option>
-                    <option value="name-asc">이름순 (가–하)</option>
-                    <option value="name-desc">이름순 (하–가)</option>
+                    <option value="adoption-desc">{language === 'ko' ? '인기 / 대중성순' : 'Adoption & Popularity'}</option>
+                    <option value="ease-desc">{language === 'ko' ? '설정 편의성순' : 'Ease of Use'}</option>
+                    <option value="activity-desc">{language === 'ko' ? '업데이트 활발한 순' : 'Update Activity'}</option>
+                    <option value="status">{language === 'ko' ? '상태순 (활성 우선)' : 'Status (Active first)'}</option>
+                    <option value="name-asc">{language === 'ko' ? '이름순 (오름차순)' : 'Name (A–Z)'}</option>
+                    <option value="name-desc">{language === 'ko' ? '이름순 (내림차순)' : 'Name (Z–A)'}</option>
                   </select>
                   <ChevronDown
                     size={13}
@@ -374,10 +376,12 @@ export default function App() {
                   <Layers size={22} />
                 </div>
                 <h3 className="text-[16px] font-semibold text-[#0a0a0a]">
-                  등록된 아이템이 없습니다
+                  {language === 'ko' ? '등록된 아이템이 없습니다' : 'No items registered'}
                 </h3>
                 <p className="text-[13px] text-[#737373] max-w-sm">
-                  카탈로그가 비어 있습니다. 웹 에디터에서 새로운 프론트엔드를 추가하거나 데이터베이스에 등록해 보세요.
+                  {language === 'ko'
+                    ? '카탈로그가 비어 있습니다. 웹 에디터에서 새로운 프론트엔드를 추가하거나 데이터베이스에 등록해 보세요.'
+                    : 'The catalog is empty. Add a new item in the editor to get started.'}
                 </p>
                 <button
                   type="button"
@@ -385,7 +389,7 @@ export default function App() {
                   className="mt-2 inline-flex items-center gap-1.5 rounded-[18px] bg-[#0a0a0a] px-4 py-2 text-[13px] font-medium text-[#fafafa] hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
                 >
                   <PlusCircle size={14} />
-                  <span>+ 새 아이템 등록하기</span>
+                  <span>{t.common.addFirstItem}</span>
                 </button>
               </div>
             ) : totalFilteredCount === 0 ? (
@@ -394,10 +398,10 @@ export default function App() {
                   <Search size={22} />
                 </div>
                 <h3 className="text-[16px] font-semibold text-[#0a0a0a]">
-                  조건에 맞는 결과가 없습니다
+                  {t.common.noResultsTitle}
                 </h3>
                 <p className="text-[13px] text-[#737373] max-w-sm">
-                  입력한 검색어 또는 선택한 필터 조건과 일치하는 항목이 없습니다. 필터를 초기화해 보세요.
+                  {t.common.noResultsDesc}
                 </p>
                 <button
                   type="button"
@@ -405,7 +409,7 @@ export default function App() {
                   className="mt-2 inline-flex items-center gap-1.5 rounded-[18px] bg-[#0a0a0a] px-4 py-2 text-[13px] font-medium text-[#fafafa] hover:opacity-90 transition-opacity cursor-pointer"
                 >
                   <RotateCcw size={13} />
-                  <span>필터 초기화</span>
+                  <span>{t.common.resetFilters}</span>
                 </button>
               </div>
             ) : (
@@ -441,7 +445,7 @@ export default function App() {
       <footer className="w-full border-t border-[#e5e5e5] bg-[#ffffff] py-6 text-center text-[13px] text-[#737373]">
         <div className="mx-auto max-w-[1400px] px-6 flex flex-col sm:flex-row items-center justify-between gap-2">
           <span>&copy; {new Date().getFullYear()} QuinutDB (db.quinut.xyz) — Curated by quinut</span>
-          <span className="text-[12px] text-[#737373]">아크로마틱 블루프린트 디자인 (DESIGN.md 기준)</span>
+          <span className="text-[12px] text-[#737373]">{language === 'ko' ? '아크로마틱 블루프린트 디자인' : 'Achromatic Blueprint Design'}</span>
         </div>
       </footer>
     </div>
