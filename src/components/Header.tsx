@@ -174,21 +174,6 @@ export const Header: React.FC<HeaderProps> = ({ onNavigateEdit }) => {
 
                   {/* Quick Info / Links */}
                   <div className="flex flex-col gap-1">
-                    <a
-                      href="/edit"
-                      onClick={(e) => {
-                        setIsProfileOpen(false);
-                        if (onNavigateEdit) {
-                          e.preventDefault();
-                          onNavigateEdit();
-                        }
-                      }}
-                      className="flex items-center gap-2 rounded-[12px] px-2.5 py-2 text-[12px] font-medium text-[#0a0a0a] hover:bg-[#f5f5f5] transition-colors"
-                    >
-                      <PlusCircle size={14} className="text-[#737373]" />
-                      <span>{t.common.contribute}</span>
-                    </a>
-
                     {user?.user_metadata?.user_name && (
                       <a
                         href={`https://github.com/${user.user_metadata.user_name}`}
