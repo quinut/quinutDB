@@ -684,6 +684,11 @@ export default function EditPage({ onNavigateHome }: EditPageProps) {
             </button>
             <div className="h-4 w-px bg-[#e5e5e5] hidden sm:block" />
             <div className="flex items-center gap-2">
+              <img
+                src="/icon.png"
+                alt="QuinutDB"
+                className="h-5 w-5 rounded-[5px] object-cover border border-[#e5e5e5] shadow-2xs shrink-0"
+              />
               <span className="text-[16px] font-semibold tracking-[-0.4px] text-[#0a0a0a]">
                 {t.editor.title}
               </span>

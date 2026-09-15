@@ -39,9 +39,14 @@ export const Header: React.FC<HeaderProps> = ({ onNavigateEdit }) => {
           <div className="flex items-center gap-2">
             <a
               href="/"
-              className="text-[20px] font-semibold tracking-[-0.6px] text-[#0a0a0a] hover:opacity-90 transition-opacity"
+              className="flex items-center gap-2.5 text-[20px] font-semibold tracking-[-0.6px] text-[#0a0a0a] hover:opacity-90 transition-opacity"
             >
-              QuinutDB
+              <img
+                src="/icon.png"
+                alt="QuinutDB"
+                className="h-7 w-7 rounded-[8px] object-cover border border-[#e5e5e5] shadow-2xs shrink-0"
+              />
+              <span>QuinutDB</span>
             </a>
             <span className="rounded-[18px] bg-[#f5f5f5] px-2 py-0.5 text-[11px] font-medium text-[#737373] border border-[#e5e5e5]">
               db.quinut.xyz
