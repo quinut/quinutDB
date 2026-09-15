@@ -164,6 +164,10 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, type, communityStats, 
   const frontend = isFrontend ? (item as FrontendItem) : null;
   const cfw = !isFrontend ? (item as OSFirmwareItem) : null;
 
+  const qAdoption = item.ratings?.adoption;
+  const qEase = item.ratings?.easeOfUse;
+  const qActivity = item.ratings?.activity;
+
   const hasUserScore = Boolean(communityStats && communityStats.totalRatings > 0);
   const avgUserScore = communityStats ? communityStats.avgUserScore : 0;
   const totalUserRatings = communityStats ? communityStats.totalRatings : 0;
@@ -185,6 +189,36 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, type, communityStats, 
           <PricingBadge pricing={item.pricing} />
           <StatusIndicator status={item.status} />
         </div>
+
+        {/* Bottom Overlay: Compact qScore 3-Benchmark Badge */}
+        {item.ratings && (
+          <div className="absolute bottom-3.5 left-3.5 z-10">
+            <div
+              title={`qScore — ${t.filter.adoptionLabel}: ${qAdoption}/5, ${t.filter.easeOfUseLabel}: ${qEase}/5, ${t.ratings.activity}: ${qActivity}/5`}
+              className="inline-flex items-center gap-2 rounded-[18px] bg-[#0a0a0a]/80 backdrop-blur-md px-3 py-1.5 text-[11px] font-medium text-[#fafafa] border border-white/15 shadow-sm"
+            >
+              <span className="rounded-[5px] bg-[#ffffff] text-[#0a0a0a] px-1.5 py-0.5 text-[9px] font-black tracking-tight leading-none">
+                qScore
+              </span>
+              <div className="flex items-center gap-2 text-[11px]">
+                <span className="inline-flex items-center">
+                  <span className="text-[#a3a3a3] text-[10px] mr-0.5">{language === 'ko' ? '인지' : 'Pop'}</span>
+                  <span className="font-semibold text-[#fafafa]">{qAdoption}</span>
+                </span>
+                <span className="text-[#525252] text-[9px] leading-none">·</span>
+                <span className="inline-flex items-center">
+                  <span className="text-[#a3a3a3] text-[10px] mr-0.5">{language === 'ko' ? '편의' : 'Ease'}</span>
+                  <span className="font-semibold text-[#fafafa]">{qEase}</span>
+                </span>
+                <span className="text-[#525252] text-[9px] leading-none">·</span>
+                <span className="inline-flex items-center">
+                  <span className="text-[#a3a3a3] text-[10px] mr-0.5">{language === 'ko' ? '활성' : 'Act'}</span>
+                  <span className="font-semibold text-[#fafafa]">{qActivity}</span>
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* 1:1 Boxart Padded Image Frame */}
         {item.logoUrl && !logoError ? (
@@ -265,9 +299,6 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, type, communityStats, 
                 )}
                 {frontend.gamepadOptimized !== false && (
                   <TriStateIndicator value={frontend.gamepadOptimized} label={t.features.gamepadOptimized} />
-                )}
-                {frontend.dualScreenOptimized !== false && frontend.dualScreenOptimized !== null && frontend.dualScreenOptimized !== undefined && (
-                  <TriStateIndicator value={frontend.dualScreenOptimized} label={t.features.dualScreenOptimized} />
                 )}
               </div>
             </>

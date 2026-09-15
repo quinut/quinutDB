@@ -20,6 +20,12 @@ export type ThemeSupportLevel = 'Rich' | 'Basic' | 'None';
 
 export type ScoreValue = 1 | 2 | 3 | 4 | 5;
 
+export interface ItemRatings {
+  adoption: ScoreValue;
+  easeOfUse: ScoreValue;
+  activity: ScoreValue;
+}
+
 export interface FrontendItem {
   id: string;
   name: string;
@@ -32,7 +38,7 @@ export interface FrontendItem {
   touchOptimized: TriState;
   gamepadOptimized: TriState;
   canReplaceHomeLauncher: TriState;
-  dualScreenOptimized: TriState;
+  ratings: ItemRatings;
   logoUrl: string;
   coverImageUrl: string;
   screenshots?: string[];
@@ -65,6 +71,7 @@ export interface OSFirmwareItem {
   exploitType?: string;
   defaultFrontend?: string;
   features?: CFWFeatures;
+  ratings: ItemRatings;
   logoUrl: string;
   coverImageUrl: string;
   screenshots?: string[];

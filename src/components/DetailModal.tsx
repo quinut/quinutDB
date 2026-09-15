@@ -47,6 +47,62 @@ const getStarScoreLabel = (score: number, lang: 'ko' | 'en') => {
   }
 };
 
+const getAdoptionDesc = (score: number, lang: 'ko' | 'en') => {
+  if (lang === 'en') {
+    switch (score) {
+      case 5: return 'Industry Standard';
+      case 4: return 'Widely Adopted';
+      case 3: return 'Established Base';
+      case 2: return 'Emerging & Niche';
+      default: return 'Specialized / Early Stage';
+    }
+  }
+  switch (score) {
+    case 5: return '사실상 표준';
+    case 4: return '높은 인지도';
+    case 3: return '안정적 생태계';
+    case 2: return '성장 및 틈새';
+    default: return '소수 및 신생';
+  }
+};
+
+const getEaseOfUseDesc = (score: number, lang: 'ko' | 'en') => {
+  if (lang === 'en') {
+    switch (score) {
+      case 5: return 'Zero Setup';
+      case 4: return 'Simple GUI Setup';
+      case 3: return 'Standard Setup';
+      case 2: return 'Manual Configuration';
+      default: return 'Advanced Level';
+    }
+  }
+  switch (score) {
+    case 5: return '원클릭 완벽';
+    case 4: return '간편한 GUI 설정';
+    case 3: return '보통 난이도';
+    case 2: return '수동 설정 필요';
+    default: return '전문가 수준';
+  }
+};
+
+const getActivityDesc = (score: number, lang: 'ko' | 'en') => {
+  if (lang === 'en') {
+    switch (score) {
+      case 5: return 'Very Active';
+      case 4: return 'Regular Updates';
+      case 3: return 'Mature Stage';
+      case 2: return 'Infrequent Updates';
+      default: return 'Dormant / Discontinued';
+    }
+  }
+  switch (score) {
+    case 5: return '매우 활발';
+    case 4: return '정기 업데이트';
+    case 3: return '안정적 운영';
+    case 2: return '업데이트 드묾';
+    default: return '방치 및 중단';
+  }
+};
 
 export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose }) => {
   const { user, openAuthModal } = useAuth();
