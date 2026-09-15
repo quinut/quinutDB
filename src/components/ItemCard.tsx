@@ -185,22 +185,22 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, type, communityStats, 
         className="relative aspect-square w-full bg-[#fafafa] border-b border-[#e5e5e5] overflow-hidden"
       >
         {/* Top Badges Overlay */}
-        <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 z-10">
+        <div className="absolute top-3.5 right-3.5 flex items-center gap-1.5 z-10">
           <PricingBadge pricing={item.pricing} />
           <StatusIndicator status={item.status} />
         </div>
 
         {/* Bottom Overlay: Compact qScore 3-Benchmark Badge */}
         {item.ratings && (
-          <div className="absolute bottom-2.5 left-2.5 z-10">
+          <div className="absolute bottom-3.5 left-3.5 z-10">
             <div
               title={`qScore — ${t.filter.adoptionLabel}: ${qAdoption}/5, ${t.filter.easeOfUseLabel}: ${qEase}/5, ${t.ratings.activity}: ${qActivity}/5`}
-              className="inline-flex items-center gap-1.5 rounded-[18px] bg-[#0a0a0a]/80 backdrop-blur-md px-2.5 py-1 text-[11px] font-medium text-[#fafafa] border border-white/15 shadow-sm"
+              className="inline-flex items-center gap-2 rounded-[18px] bg-[#0a0a0a]/80 backdrop-blur-md px-3 py-1.5 text-[11px] font-medium text-[#fafafa] border border-white/15 shadow-sm"
             >
-              <span className="rounded-[4px] bg-[#ffffff] text-[#0a0a0a] px-1 py-0.2 text-[9px] font-black tracking-tight leading-none">
+              <span className="rounded-[5px] bg-[#ffffff] text-[#0a0a0a] px-1.5 py-0.5 text-[9px] font-black tracking-tight leading-none">
                 qScore
               </span>
-              <div className="flex items-center gap-1.5 text-[11px]">
+              <div className="flex items-center gap-2 text-[11px]">
                 <span className="inline-flex items-center">
                   <span className="text-[#a3a3a3] text-[10px] mr-0.5">{language === 'ko' ? '인지' : 'Pop'}</span>
                   <span className="font-semibold text-[#fafafa]">{qAdoption}</span>
