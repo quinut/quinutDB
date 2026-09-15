@@ -228,8 +228,9 @@ const TriStateControl: React.FC<TriStateControlProps> = ({
 
 export default function EditPage({ onNavigateHome }: EditPageProps) {
   const { frontends, osFirmwares, saveItem, isFromDatabase } = useCatalog();
-  const { user, openAuthModal } = useAuth();
+  const { user, profile, openAuthModal, signOut } = useAuth();
   const [isSavingDb, setIsSavingDb] = useState(false);
+
   const [dbSaveSuccess, setDbSaveSuccess] = useState(false);
   const [dbSaveError, setDbSaveError] = useState<string | null>(null);
 
@@ -740,7 +741,41 @@ export default function EditPage({ onNavigateHome }: EditPageProps) {
               <ExternalLink size={14} />
               <span className="hidden sm:inline">GitHub 이슈 제보</span>
             </a>
+
+            {/* User Auth Section */}
+            {user ? (
+              <div className="flex items-center gap-1.5 p-0.5 pr-2.5 rounded-[18px] border border-[#e5e5e5] bg-[#fafafa]">
+                {profile?.avatar_url ? (
+                  <img
+                    src={profile.avatar_url}
+                    alt={profile?.username || 'User'}
+                    className="h-6 w-6 rounded-full object-cover border border-[#e5e5e5]"
+                  />
+                ) : (
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#0a0a0a] text-[10px] font-bold text-[#fafafa]">
+                    {(profile?.username || user.email || 'U').slice(0, 1).toUpperCase()}
+                  </div>
+                )}
+                <span className="text-[12px] font-medium text-[#0a0a0a] max-w-[80px] truncate hidden sm:inline">
+                  {profile?.username || user.user_metadata?.user_name || 'User'}
+                </span>
+                {profile?.is_admin && (
+                  <span className="rounded-[6px] bg-[#0a0a0a] px-1.5 py-0.2 text-[8px] font-bold text-[#fafafa]">
+                    ADMIN
+                  </span>
+                )}
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => openAuthModal()}
+                className="inline-flex items-center gap-1.5 rounded-[18px] bg-[#0a0a0a] px-3 py-1.5 text-[12px] font-medium text-[#fafafa] hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+              >
+                <span>로그인</span>
+              </button>
+            )}
           </div>
+
         </div>
       </header>
 

@@ -8,6 +8,7 @@ export interface UserProfile {
   email?: string;
   username?: string;
   avatar_url?: string;
+  is_admin?: boolean;
 }
 
 interface AuthContextType {
@@ -36,29 +37,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const fetchProfile = async (currentUser: User) => {
     if (!isSupabaseConfigured) return;
     try {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', currentUser.id)
-        .single();
+        .maybeSingle();
 
-      if (data && !error) {
-        setProfile(data);
-      } else {
-        // Fallback to auth user metadata
-        setProfile({
-          id: currentUser.id,
-          email: currentUser.email,
-          username:
-            currentUser.user_metadata?.user_name ||
-            currentUser.user_metadata?.full_name ||
-            currentUser.email?.split('@')[0] ||
-            'User',
-          avatar_url: currentUser.user_metadata?.avatar_url || '',
-        });
-      }
-    } catch {
-      // ignore
+      const userMeta = currentUser.user_metadata || {};
+      const resolvedUsername =
+        data?.username ||
+        userMeta.user_name ||
+        userMeta.preferred_username ||
+        userMeta.full_name ||
+        currentUser.email?.split('@')[0] ||
+        'User';
+      const resolvedAvatar =
+        data?.avatar_url ||
+        userMeta.avatar_url ||
+        userMeta.picture ||
+        '';
+      const isAdmin = Boolean(
+        data?.is_admin ||
+        currentUser.email === 'quinut@proton.me' ||
+        resolvedUsername.toLowerCase() === 'quinut'
+      );
+
+      setProfile({
+        id: currentUser.id,
+        email: currentUser.email,
+        username: resolvedUsername,
+        avatar_url: resolvedAvatar,
+        is_admin: isAdmin,
+      });
+    } catch (err) {
+      console.error('[Auth] Failed to fetch profile:', err);
     }
   };
 
@@ -66,6 +78,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!isSupabaseConfigured) {
       setLoading(false);
       return;
+    }
+
+    // Check for OAuth error in URL hash or query params
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const errorDesc = urlParams.get('error_description') || hashParams.get('error_description');
+      if (errorDesc) {
+        console.warn('[Auth] OAuth error returned in URL:', errorDesc);
+      }
     }
 
     // Initial session
@@ -80,17 +102,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Listen to changes
     const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (_event, newSession) => {
+      async (event, newSession) => {
         setSession(newSession);
         setUser(newSession?.user ?? null);
         if (newSession?.user) {
           await fetchProfile(newSession.user);
+          // Clean up URL if returning from OAuth redirect
+          if (
+            typeof window !== 'undefined' &&
+            (window.location.search.includes('code=') || window.location.hash.includes('access_token='))
+          ) {
+            window.history.replaceState({}, document.title, window.location.pathname);
+          }
         } else {
           setProfile(null);
         }
         setLoading(false);
       }
     );
+
 
     return () => {
       authListener?.subscription.unsubscribe();

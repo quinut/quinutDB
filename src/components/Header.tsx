@@ -1,5 +1,5 @@
-import React from 'react';
-import { Coffee, PlusCircle, LogIn, LogOut, User as UserIcon } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Coffee, PlusCircle, LogIn, LogOut, User as UserIcon, ChevronDown, ExternalLink } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 export interface HeaderProps {
@@ -7,10 +7,31 @@ export interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ onNavigateEdit }) => {
-  const { user, profile, signOut, openAuthModal } = useAuth();
+  const { user, profile, loading, signOut, openAuthModal } = useAuth();
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+
   const displayName = profile?.username || user?.user_metadata?.user_name || user?.email?.split('@')[0] || 'User';
+  const displayEmail = profile?.email || user?.email || '';
+  const avatarUrl = profile?.avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.picture || '';
+  const isAdmin = Boolean(profile?.is_admin);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setIsProfileOpen(false);
+      }
+    };
+    if (isProfileOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isProfileOpen]);
+
   return (
-    <header className="w-full border-b border-[#e5e5e5] bg-[#ffffff]">
+    <header className="w-full border-b border-[#e5e5e5] bg-[#ffffff] relative z-30">
       <div className="mx-auto flex max-w-[1400px] items-center justify-between px-6 py-4 sm:px-8">
         {/* Brand Title & Slogan */}
         <div className="flex flex-col gap-0.5">
@@ -61,31 +82,130 @@ export const Header: React.FC<HeaderProps> = ({ onNavigateEdit }) => {
           </a>
 
           {/* User Auth Section */}
-          {user ? (
-            <div className="flex items-center gap-1.5 p-0.5 pr-2 rounded-[18px] border border-[#e5e5e5] bg-[#fafafa]">
-              {profile?.avatar_url ? (
-                <img
-                  src={profile.avatar_url}
-                  alt={displayName}
-                  className="h-7 w-7 rounded-full object-cover border border-[#e5e5e5]"
-                />
-              ) : (
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#0a0a0a] text-[11px] font-bold text-[#fafafa]">
-                  {displayName.slice(0, 1).toUpperCase()}
-                </div>
-              )}
-              <span className="text-[12px] font-medium text-[#0a0a0a] max-w-[90px] truncate hidden sm:inline">
-                {displayName}
-              </span>
+          {loading ? (
+            <div className="h-[36px] w-[90px] rounded-[18px] bg-[#f0f0f0] animate-pulse border border-[#e5e5e5]" />
+          ) : user ? (
+            <div className="relative" ref={dropdownRef}>
               <button
                 type="button"
-                onClick={() => signOut()}
-                title="로그아웃"
-                aria-label="로그아웃"
-                className="flex h-6 w-6 items-center justify-center rounded-full text-[#737373] hover:text-[#0a0a0a] hover:bg-[#e5e5e5] transition-colors cursor-pointer"
+                onClick={() => setIsProfileOpen((prev: boolean) => !prev)}
+                className={`flex items-center gap-2 p-1 pr-2.5 rounded-[20px] border transition-all cursor-pointer ${
+                  isProfileOpen
+                    ? 'border-[#0a0a0a] bg-[#f5f5f5] shadow-xs'
+                    : 'border-[#e5e5e5] bg-[#fafafa] hover:bg-[#f0f0f0]'
+                }`}
+                title="프로필 보기"
               >
-                <LogOut size={12} />
+                {avatarUrl ? (
+                  <img
+                    src={avatarUrl}
+                    alt={displayName}
+                    className="h-7 w-7 rounded-full object-cover border border-[#e5e5e5] shrink-0"
+                  />
+                ) : (
+                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#0a0a0a] text-[11px] font-bold text-[#fafafa] shrink-0">
+                    {displayName.slice(0, 1).toUpperCase()}
+                  </div>
+                )}
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[12px] font-medium text-[#0a0a0a] max-w-[100px] truncate">
+                    {displayName}
+                  </span>
+                  {isAdmin && (
+                    <span className="rounded-[8px] bg-[#0a0a0a] px-1.5 py-0.2 text-[9px] font-bold text-[#fafafa]">
+                      ADMIN
+                    </span>
+                  )}
+                  <ChevronDown
+                    size={12}
+                    className={`text-[#737373] transition-transform duration-200 ${
+                      isProfileOpen ? 'rotate-180 text-[#0a0a0a]' : ''
+                    }`}
+                  />
+                </div>
               </button>
+
+              {/* Profile Floating Dropdown */}
+              {isProfileOpen && (
+                <div className="absolute right-0 top-[calc(100%+8px)] w-[260px] rounded-[20px] border border-[#e5e5e5] bg-[#ffffff] p-4 shadow-[0_12px_32px_rgba(0,0,0,0.12)] z-50 animate-fade-in flex flex-col gap-3">
+                  {/* User Card Header */}
+                  <div className="flex items-center gap-3 pb-3 border-b border-[#f0f0f0]">
+                    {avatarUrl ? (
+                      <img
+                        src={avatarUrl}
+                        alt={displayName}
+                        className="h-11 w-11 rounded-full object-cover border border-[#e5e5e5] shrink-0"
+                      />
+                    ) : (
+                      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#0a0a0a] text-[16px] font-bold text-[#fafafa] shrink-0">
+                        {displayName.slice(0, 1).toUpperCase()}
+                      </div>
+                    )}
+                    <div className="flex flex-col min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[14px] font-semibold text-[#0a0a0a] truncate">
+                          {displayName}
+                        </span>
+                        {isAdmin && (
+                          <span className="rounded-[8px] bg-[#0a0a0a] px-1.5 py-0.2 text-[9px] font-bold text-[#fafafa]">
+                            ADMIN
+                          </span>
+                        )}
+                      </div>
+                      {displayEmail && (
+                        <span className="text-[11px] text-[#737373] truncate" title={displayEmail}>
+                          {displayEmail}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Quick Info / Links */}
+                  <div className="flex flex-col gap-1">
+                    <a
+                      href="/edit"
+                      onClick={(e) => {
+                        setIsProfileOpen(false);
+                        if (onNavigateEdit) {
+                          e.preventDefault();
+                          onNavigateEdit();
+                        }
+                      }}
+                      className="flex items-center gap-2 rounded-[12px] px-2.5 py-2 text-[12px] font-medium text-[#0a0a0a] hover:bg-[#f5f5f5] transition-colors"
+                    >
+                      <PlusCircle size={14} className="text-[#737373]" />
+                      <span>카탈로그 데이터 관리 (/edit)</span>
+                    </a>
+
+                    {user?.user_metadata?.user_name && (
+                      <a
+                        href={`https://github.com/${user.user_metadata.user_name}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 rounded-[12px] px-2.5 py-2 text-[12px] font-medium text-[#0a0a0a] hover:bg-[#f5f5f5] transition-colors"
+                      >
+                        <ExternalLink size={14} className="text-[#737373]" />
+                        <span>GitHub 프로필</span>
+                      </a>
+                    )}
+                  </div>
+
+                  {/* Sign Out Button */}
+                  <div className="pt-2 border-t border-[#f0f0f0]">
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        setIsProfileOpen(false);
+                        await signOut();
+                      }}
+                      className="flex w-full items-center justify-center gap-1.5 rounded-[14px] bg-[#fef2f2] hover:bg-[#fee2e2] text-[#dc2626] py-2 text-[12px] font-semibold transition-colors cursor-pointer"
+                    >
+                      <LogOut size={13} />
+                      <span>로그아웃</span>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <button
@@ -97,6 +217,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigateEdit }) => {
               <span>로그인</span>
             </button>
           )}
+
 
           {/* GitHub Repo Button */}
           <a

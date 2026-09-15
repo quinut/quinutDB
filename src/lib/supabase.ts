@@ -15,8 +15,11 @@ export const supabase: SupabaseClient = isSupabaseConfigured
       auth: {
         persistSession: true,
         autoRefreshToken: true,
+        detectSessionInUrl: true,
+        flowType: 'pkce',
       },
     })
   : (createClient('https://mock-unconfigured.supabase.co', 'mock-key', {
       auth: { persistSession: false },
     }) as any);
+
