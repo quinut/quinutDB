@@ -178,11 +178,11 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, type, communityStats, 
       className="group relative flex flex-col overflow-hidden rounded-[20px] border border-[#e5e5e5] bg-[#ffffff] shadow-[0_0_0_1px_rgba(23,23,23,0.05),0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] transition-all duration-300 hover:shadow-[0_0_0_1px_rgba(23,23,23,0.08),0_4px_12px_rgba(0,0,0,0.06),0_2px_4px_-1px_rgba(0,0,0,0.06)] hover:-translate-y-0.5 cursor-pointer"
     >
       {/* ============================================================ */}
-      {/* 1. 1:1 Boxart Identity (Square Aspect Ratio - Edge to Edge)  */}
+      {/* 1. 1:1 Boxart Identity (Square Aspect Ratio - Padded Box)     */}
       {/* ============================================================ */}
       <div
         style={{ aspectRatio: '1 / 1' }}
-        className="relative aspect-square w-full bg-[#fafafa] border-b border-[#e5e5e5] overflow-hidden"
+        className="relative aspect-square w-full bg-[#fafafa] border-b border-[#e5e5e5] overflow-hidden flex items-center justify-center p-10 sm:p-12"
       >
         {/* Top Badges Overlay */}
         <div className="absolute top-3.5 right-3.5 flex items-center gap-1.5 z-10">
@@ -220,13 +220,13 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, type, communityStats, 
           </div>
         )}
 
-        {/* 1:1 Boxart Full-Bleed Image Frame */}
+        {/* 1:1 Boxart Padded Image Frame */}
         {item.logoUrl && !logoError ? (
           <img
             src={item.logoUrl}
             alt={`${item.name} logo`}
             onError={() => setLogoError(true)}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105 select-none"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center p-6 text-center">
