@@ -25,31 +25,31 @@ export interface DetailModalProps {
 
 const getAdoptionDesc = (score: number) => {
   switch (score) {
-    case 5: return '사실상 표준 (Industry Standard & Ecosystem)';
-    case 4: return '높은 대중성 (Widely Adopted & Strong Community)';
-    case 3: return '안정적 생태계 (Established Base & Community)';
-    case 2: return '성장/틈새 (Emerging Niche Alternative)';
-    default: return '소수/신생 (Specialized or Early Stage)';
+    case 5: return '사실상 표준';
+    case 4: return '높은 대중성';
+    case 3: return '안정적 생태계';
+    case 2: return '성장/틈새';
+    default: return '소수/신생';
   }
 };
 
 const getEaseOfUseDesc = (score: number) => {
   switch (score) {
-    case 5: return '원클릭 완벽 (Zero Setup / Instant Out-of-the-Box)';
-    case 4: return '간편한 GUI 설정 (Straightforward UI Setup)';
-    case 3: return '보통 난이도 (Standard Setup / Guide Recommended)';
-    case 2: return '수동 설정 필요 (Complex Manual Configuration)';
-    default: return '전문가 수준 (CLI / Deep Modding Skills)';
+    case 5: return '원클릭 완벽';
+    case 4: return '간편한 GUI 설정';
+    case 3: return '보통 난이도';
+    case 2: return '수동 설정 필요';
+    default: return '전문가 수준';
   }
 };
 
 const getActivityDesc = (score: number) => {
   switch (score) {
-    case 5: return '매우 활발 (Frequent Releases & Very Active)';
-    case 4: return '정기적 업데이트 (Regular Stable Updates)';
-    case 3: return '안정화 단계 (Mature Stage / Occasional Patch)';
-    case 2: return '업데이트 저조 (Infrequent Updates / Near Stale)';
-    default: return '방치 / EOL (Dormant or Discontinued)';
+    case 5: return '매우 활발';
+    case 4: return '정기적 업데이트';
+    case 3: return '안정화 단계';
+    case 2: return '업데이트 저조';
+    default: return '방치 / 중단';
   }
 };
 
@@ -185,7 +185,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
                 </span>
               </div>
               <span className="text-[12px] text-[#737373]">
-                {isFrontend ? 'Emulation Frontend & Launcher' : 'Custom Firmware & OS'}
+                {isFrontend ? '에뮬레이션 프론트엔드 & 런처' : '커스텀 펌웨어 & OS'}
               </span>
             </div>
           </div>
@@ -213,7 +213,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
             <div>
               <div className="flex items-center justify-between mb-2">
                 <h4 className="text-[11px] font-semibold uppercase tracking-wider text-[#737373]">
-                  Official Boxart & Identity
+                  공식 박스아트 & 아이덴티티
                 </h4>
                 <span className="text-[11px] text-[#737373]">1:1 Boxart Format</span>
               </div>
@@ -255,7 +255,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
                 <div className="flex items-center justify-between mb-2.5">
                   <div className="flex items-center gap-2">
                     <h4 className="text-[11px] font-semibold uppercase tracking-wider text-[#737373]">
-                      Curation & Community Ratings
+                      큐레이션 & 커뮤니티 평가
                     </h4>
                     {stats && stats.voteCount > 0 ? (
                       <span className="rounded-[18px] bg-[#0a0a0a] text-[#ffffff] px-2 py-0.2 text-[10px] font-medium">
@@ -263,11 +263,11 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
                       </span>
                     ) : (
                       <span className="rounded-[18px] bg-[#f5f5f5] text-[#737373] border border-[#e5e5e5] px-2 py-0.2 text-[10px] font-medium">
-                        큐레이션 기준점수
+                        큐레이션 기준 점수
                       </span>
                     )}
                   </div>
-                  <span className="text-[11px] text-[#737373]">1–5 Standard Benchmark</span>
+                  <span className="text-[11px] text-[#737373]">1–5 표준 벤치마크</span>
                 </div>
 
                 {(() => {
@@ -504,7 +504,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
             {isFrontend && frontend && (
               <div>
                 <h4 className="text-[11px] font-semibold uppercase tracking-wider text-[#737373] mb-3">
-                  Specification & Feature Matrix
+                  사양 & 기능 매트릭스
                 </h4>
                 <div className="grid grid-cols-2 gap-2.5">
                   <div className="flex items-center justify-between p-3 rounded-[16px] border border-[#e5e5e5] bg-[#fafafa]">
@@ -536,7 +536,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
               {/* Overview Narrative */}
               <div>
                 <h4 className="text-[11px] font-semibold uppercase tracking-wider text-[#737373] mb-2.5">
-                  About & Overview
+                  소개 & 개요
                 </h4>
                 <div className="rounded-[18px] bg-[#ffffff] p-5 border border-[#e5e5e5] shadow-2xs">
                   <p className="text-[14px] sm:text-[15px] leading-relaxed text-[#171717]">
@@ -548,14 +548,14 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
               {/* Compatibility & Platform Specs */}
               <div>
                 <h4 className="text-[11px] font-semibold uppercase tracking-wider text-[#737373] mb-2.5">
-                  Environment & Compatibility
+                  환경 & 호환성
                 </h4>
 
                 {isFrontend && frontend && (
                   <div className="rounded-[18px] bg-[#ffffff] p-5 border border-[#e5e5e5] flex flex-col gap-3.5 shadow-2xs">
                     <div>
                       <span className="text-[12px] text-[#737373] block mb-1.5 font-medium">
-                        Supported OS / CFW
+                        지원 OS / CFW
                       </span>
                       <div className="flex flex-wrap gap-1.5">
                         {frontend.supportedPlatforms.map((platform: string) => (
@@ -570,7 +570,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
                     </div>
 
                     <div className="border-t border-[#e5e5e5] pt-3 flex items-center justify-between">
-                      <span className="text-[12px] text-[#737373] font-medium">Theme Customization</span>
+                      <span className="text-[12px] text-[#737373] font-medium">테마 커스터마이징</span>
                       <span className="rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5] px-2.5 py-0.5 text-[12px] font-medium text-[#0a0a0a]">
                         {frontend.themeSupport} Engine
                       </span>
@@ -581,19 +581,19 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
                 {!isFrontend && cfw && (
                   <div className="rounded-[18px] bg-[#ffffff] p-5 border border-[#e5e5e5] flex flex-col gap-3.5 shadow-2xs">
                     <div>
-                      <span className="text-[12px] text-[#737373] block mb-1 font-medium">Base Kernel / OS</span>
+                      <span className="text-[12px] text-[#737373] block mb-1 font-medium">기반 커널 / OS</span>
                       <span className="text-[13px] text-[#0a0a0a] font-medium">{cfw.baseSystem}</span>
                     </div>
 
                     {cfw.exploitType && (
                       <div className="border-t border-[#e5e5e5] pt-3">
-                        <span className="text-[12px] text-[#737373] block mb-1 font-medium">Exploit / Boot Method</span>
+                        <span className="text-[12px] text-[#737373] block mb-1 font-medium">익스플로잇 / 부트 방식</span>
                         <span className="text-[13px] text-[#0a0a0a] font-medium">{cfw.exploitType}</span>
                       </div>
                     )}
 
                     <div className="border-t border-[#e5e5e5] pt-3">
-                      <span className="text-[12px] text-[#737373] block mb-1.5 font-medium">Target Devices</span>
+                      <span className="text-[12px] text-[#737373] block mb-1.5 font-medium">대상 기기</span>
                       <div className="flex flex-wrap gap-1.5">
                         {cfw.targetDevices.map((device: string) => (
                           <span
@@ -613,7 +613,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
                 <div className="flex items-center justify-between mb-2.5">
                   <div className="flex items-center gap-2">
                     <h4 className="text-[11px] font-semibold uppercase tracking-wider text-[#737373]">
-                      Community Reviews
+                      커뮤니티 리뷰
                     </h4>
                     <span className="rounded-[18px] bg-[#0a0a0a] px-2 py-0.2 text-[11px] font-medium text-[#fafafa]">
                       {reviews.length}
@@ -630,7 +630,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
                       onChange={(e) => setReviewContent(e.target.value)}
                       placeholder={
                         user
-                          ? '이 프론트엔드의 장단점, 실사용 팁, 세팅 노하우를 공유해 보세요...'
+                          ? '이 항목의 장단점, 실사용 팁, 세팅 노하우를 공유해 보세요...'
                           : '리뷰를 작성하려면 먼저 로그인해 주세요...'
                       }
                       rows={3}
@@ -643,8 +643,9 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
                       <p className="text-[12px] text-red-600 font-medium px-1">{reviewError}</p>
                     )}
                     {reviewSubmitted && (
-                      <p className="text-[12px] text-emerald-600 font-medium px-1">
-                        ✓ 리뷰가 성공적으로 등록되었습니다!
+                      <p className="inline-flex items-center gap-1 text-[12px] text-emerald-600 font-medium px-1">
+                        <CheckCircle2 size={14} />
+                        <span>리뷰가 성공적으로 등록되었습니다.</span>
                       </p>
                     )}
 
@@ -737,7 +738,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
             {/* Quick Action Links Footer */}
             <div className="border-t border-[#e5e5e5] pt-5 flex flex-col gap-2.5">
               <h4 className="text-[11px] font-semibold uppercase tracking-wider text-[#737373]">
-                External Resources
+                외부 리소스
               </h4>
               <div className="flex flex-col gap-2">
                 {item.downloadUrl && (
@@ -747,7 +748,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
                     rel="noopener noreferrer"
                     className="inline-flex h-[42px] w-full items-center justify-center gap-2 rounded-[18px] bg-[#0a0a0a] px-5 text-[14px] font-medium text-[#fafafa] hover:opacity-90 transition-opacity"
                   >
-                    <span>Get / Download</span>
+                    <span>다운로드</span>
                     <Download size={16} strokeWidth={2} className="shrink-0" />
                   </a>
                 )}
@@ -761,7 +762,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
                       className="inline-flex h-[40px] items-center justify-center gap-2 rounded-[18px] border border-[#e5e5e5] bg-[#ffffff] px-3 text-[13px] font-medium text-[#0a0a0a] hover:bg-[#f5f5f5] transition-colors"
                     >
                       <Globe size={15} strokeWidth={2} className="shrink-0" />
-                      <span className="truncate">Website</span>
+                      <span className="truncate">웹사이트</span>
                     </a>
                   )}
 
@@ -785,7 +786,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
                           d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
                         />
                       </svg>
-                      <span className="truncate">GitHub</span>
+                      <span className="truncate">깃허브</span>
                     </a>
                   )}
                 </div>

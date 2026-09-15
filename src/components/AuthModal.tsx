@@ -77,7 +77,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               QuinutDB 로그인
             </span>
             <span className="rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5] px-2 py-0.5 text-[10px] font-medium text-[#737373]">
-              Community
+              커뮤니티
             </span>
           </div>
           <p className="text-[13px] text-[#737373] leading-relaxed">

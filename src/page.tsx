@@ -264,8 +264,8 @@ export default function App() {
         {/* Top Control Bar: Title & Mobile Filter Trigger */}
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
-            <h2 className="text-[18px] sm:text-[20px] font-semibold text-[#0a0a0a] tracking-tight">
-              Frontends & Launchers
+<h2 className="text-[18px] sm:text-[20px] font-semibold text-[#0a0a0a] tracking-tight">
+              프론트엔드 & 런처
             </h2>
             <span className="rounded-[18px] bg-[#0a0a0a] px-2.5 py-0.5 text-[11px] font-medium text-[#fafafa]">
               {totalFilteredCount}
@@ -295,7 +295,7 @@ export default function App() {
             className="lg:hidden inline-flex items-center gap-2 rounded-[18px] border border-[#e5e5e5] bg-[#ffffff] px-3.5 py-1.5 text-[13px] font-medium text-[#0a0a0a] hover:bg-[#f5f5f5] transition-colors cursor-pointer shadow-xs shrink-0"
           >
             <SlidersHorizontal size={15} />
-            <span>Filters</span>
+            <span>필터</span>
             {activeFilterCount > 0 && (
               <span className="rounded-[18px] bg-[#0a0a0a] px-2 py-0.2 text-[11px] font-medium text-[#fafafa]">
                 {activeFilterCount}
@@ -337,28 +337,27 @@ export default function App() {
           >
             {/* Top Utility Bar (Result Count & Sort Dropdown) */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#ffffff] px-4 py-3 rounded-[18px] border border-[#e5e5e5] shadow-xs">
-              <span className="text-[13px] text-[#737373]">
-                Showing <strong className="text-[#0a0a0a] font-semibold">{totalFilteredCount}</strong> of{' '}
-                {totalCountForTab} items
-                {activeFilterCount > 0 && ' (Filtered)'}
+<span className="text-[13px] text-[#737373]">
+                <strong className="text-[#0a0a0a] font-semibold">{totalFilteredCount}</strong> / {totalCountForTab}개 표시
+                {activeFilterCount > 0 && ' (필터링됨)'}
               </span>
 
               {/* Sort Dropdown */}
               <div className="flex items-center gap-2 self-end sm:self-auto">
-                <span className="text-[12px] font-medium text-[#737373]">Sort:</span>
+                <span className="text-[12px] font-medium text-[#737373]">정렬:</span>
                 <div className="relative inline-flex items-center">
-                  <select
+<select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value as SortOption)}
-                    aria-label="Sort options"
+                    aria-label="정렬 옵션"
                     className="appearance-none rounded-[18px] border border-[#e5e5e5] bg-[#fafafa] py-1 pl-3 pr-8 text-[12px] font-medium text-[#0a0a0a] hover:border-[#737373] focus:border-[#0a0a0a] focus:outline-none cursor-pointer transition-colors"
                   >
-                    <option value="adoption-desc">인기 / 대중성순 (Most Adopted)</option>
-                    <option value="ease-desc">설정 편의성순 (Easiest Setup)</option>
-                    <option value="activity-desc">업데이트 활발한 순 (Most Active)</option>
-                    <option value="status">상태순 (Active first)</option>
-                    <option value="name-asc">이름순 (A–Z)</option>
-                    <option value="name-desc">이름순 (Z–A)</option>
+                    <option value="adoption-desc">인기 / 대중성순</option>
+                    <option value="ease-desc">설정 편의성순</option>
+                    <option value="activity-desc">업데이트 활발한 순</option>
+                    <option value="status">상태순 (활성 우선)</option>
+                    <option value="name-asc">이름순 (가–하)</option>
+                    <option value="name-desc">이름순 (하–가)</option>
                   </select>
                   <ChevronDown
                     size={13}
@@ -406,7 +405,7 @@ export default function App() {
                   className="mt-2 inline-flex items-center gap-1.5 rounded-[18px] bg-[#0a0a0a] px-4 py-2 text-[13px] font-medium text-[#fafafa] hover:opacity-90 transition-opacity cursor-pointer"
                 >
                   <RotateCcw size={13} />
-                  <span>필터 초기화 (Reset Filters)</span>
+                  <span>필터 초기화</span>
                 </button>
               </div>
             ) : (
@@ -442,7 +441,7 @@ export default function App() {
       <footer className="w-full border-t border-[#e5e5e5] bg-[#ffffff] py-6 text-center text-[13px] text-[#737373]">
         <div className="mx-auto max-w-[1400px] px-6 flex flex-col sm:flex-row items-center justify-between gap-2">
           <span>&copy; {new Date().getFullYear()} QuinutDB (db.quinut.xyz) — Curated by quinut</span>
-          <span className="text-[12px] text-[#737373]">Achromatic blueprint design based on DESIGN.md</span>
+          <span className="text-[12px] text-[#737373]">아크로마틱 블루프린트 디자인 (DESIGN.md 기준)</span>
         </div>
       </footer>
     </div>

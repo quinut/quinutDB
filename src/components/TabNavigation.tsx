@@ -27,7 +27,7 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({
               : 'text-[#737373] hover:text-[#0a0a0a] hover:bg-[#f5f5f5]'
           }`}
         >
-          All Catalog
+          전체 카탈로그
         </button>
 
         {/* Tab 1: Frontends & Launchers */}
@@ -42,7 +42,7 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({
               : 'text-[#737373] hover:text-[#0a0a0a] hover:bg-[#f5f5f5]'
           }`}
         >
-          Frontends & Launchers
+프론트엔드 & 런처
         </button>
 
         {/* Tab 2: Custom Firmware & OS */}
@@ -57,7 +57,7 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({
               : 'text-[#737373] hover:text-[#0a0a0a] hover:bg-[#f5f5f5]'
           }`}
         >
-          Custom Firmware & OS
+커스텀 펌웨어 & OS
         </button>
       </div>
     </nav>

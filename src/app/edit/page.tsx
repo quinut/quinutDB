@@ -2,18 +2,23 @@ import React, { useState, useMemo } from 'react';
 import {
   ArrowLeft,
   Check,
-  Copy,
-  ExternalLink,
-  RefreshCw,
+  X,
+  HelpCircle,
   AlertCircle,
-  Code2,
   PlusCircle,
   Edit3,
   Eye,
-  Image as ImageIcon,
   CheckCircle2,
   SlidersHorizontal,
   Layers,
+  Database,
+  Send,
+  Inbox,
+  Trash2,
+  LogIn,
+  RotateCcw,
+  RefreshCw,
+  Image as ImageIcon,
 } from 'lucide-react';
 import {
   FrontendItem,
@@ -31,15 +36,16 @@ import {
 } from '../../types';
 import { useCatalog } from '../../hooks/useCatalog';
 import { useAuth } from '../../contexts/AuthContext';
+import { useProposals, ItemProposal } from '../../hooks/useProposals';
 import { ItemCard } from '../../components/ItemCard';
-import { Database } from 'lucide-react';
 
 export interface EditPageProps {
   onNavigateHome?: () => void;
 }
 
-type Mode = 'create' | 'edit';
+type Mode = 'create' | 'edit' | 'proposals';
 type ItemType = 'frontend' | 'cfw';
+
 
 const PRICING_OPTIONS: PricingModel[] = [
   'Free & Open Source',
@@ -207,7 +213,8 @@ const TriStateControl: React.FC<TriStateControlProps> = ({
               : 'text-[#737373] hover:text-[#0a0a0a]'
           }`}
         >
-          <span>✕ No</span>
+          <X size={12} strokeWidth={2.5} />
+          <span>No</span>
         </button>
 
         <button
@@ -219,7 +226,8 @@ const TriStateControl: React.FC<TriStateControlProps> = ({
               : 'text-[#737373] hover:text-[#0a0a0a]'
           }`}
         >
-          <span>? Unknown</span>
+          <HelpCircle size={12} strokeWidth={2.5} />
+          <span>Unknown</span>
         </button>
       </div>
     </div>
@@ -227,19 +235,31 @@ const TriStateControl: React.FC<TriStateControlProps> = ({
 };
 
 export default function EditPage({ onNavigateHome }: EditPageProps) {
-  const { frontends, osFirmwares, saveItem, isFromDatabase } = useCatalog();
-  const { user, profile, openAuthModal, signOut } = useAuth();
-  const [isSavingDb, setIsSavingDb] = useState(false);
+  const { frontends, osFirmwares, saveItem } = useCatalog();
+  const { user, profile, openAuthModal } = useAuth();
+  const isAdmin = Boolean(profile?.is_admin);
 
-  const [dbSaveSuccess, setDbSaveSuccess] = useState(false);
-  const [dbSaveError, setDbSaveError] = useState<string | null>(null);
+  const {
+    proposals,
+    pendingCount,
+    loading: proposalsLoading,
+    fetchProposals,
+    submitProposal,
+    rejectProposal,
+    markProposalApproved,
+  } = useProposals(isAdmin);
 
-  // Navigation & Mode selection
   const [mode, setMode] = useState<Mode>('create');
   const [targetType, setTargetType] = useState<ItemType>('frontend');
   const [selectedItemId, setSelectedItemId] = useState<string>('');
+  const [activeProposalId, setActiveProposalId] = useState<string | null>(null);
   const [isSlugLocked, setIsSlugLocked] = useState(false);
-  const [copied, setCopied] = useState(false);
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+
+
 
   // Common Form States
   const [id, setId] = useState('');
@@ -532,171 +552,149 @@ export default function EditPage({ onNavigateHome }: EditPageProps) {
     emuNandOrSandbox,
   ]);
 
-  // Formatted TypeScript Code for export
-  const generatedCode = useMemo(() => {
-    const obj: Record<string, any> = {
-      id,
-      name,
-      shortDesc,
-      pricing,
-      status,
-    };
+  // Admin: Load a proposal into form for review
+  const handleLoadProposal = (proposal: ItemProposal) => {
+    setTargetType(proposal.type);
+    setSelectedItemId('');
+    setActiveProposalId(proposal.id);
+    setIsSlugLocked(true);
+    setMode('edit');
 
-    if (targetType === 'frontend') {
-      obj.supportedPlatforms = supportedPlatforms;
-      obj.hasBuiltInScraper = hasBuiltInScraper;
-      obj.themeSupport = themeSupport;
-      obj.touchOptimized = touchOptimized;
-      obj.gamepadOptimized = gamepadOptimized;
-      obj.canReplaceHomeLauncher = canReplaceHomeLauncher;
-    } else {
-      obj.category = category;
-      obj.formFactor = formFactor;
-      obj.targetDevices = targetDevicesText
-        .split(',')
-        .map((s) => s.trim())
-        .filter(Boolean);
-      obj.baseSystem = baseSystem;
-      if (exploitType) obj.exploitType = exploitType;
-      if (defaultFrontend) obj.defaultFrontend = defaultFrontend;
-      obj.features = {
-        portMaster,
-        sleepMode,
-        hdmiOut,
-        otaUpdate,
-        pluginLoader,
-        emuNandOrSandbox,
-      };
+    const data: any = proposal.data || {};
+    setId(data.id || '');
+    setName(data.name || '');
+    setShortDesc(data.shortDesc || '');
+    setPricing(data.pricing || 'Free & Open Source');
+    setStatus(data.status || 'Active');
+    setOfficialUrl(data.officialUrl || '');
+    setDownloadUrl(data.downloadUrl || '');
+    setGithubRepo(data.githubRepo || '');
+    setLogoUrl(data.logoUrl || '');
+    setCoverImageUrl(data.coverImageUrl || '');
+
+    if (data.ratings) {
+      setAdoption(data.ratings.adoption || 4);
+      setEaseOfUse(data.ratings.easeOfUse || 4);
+      setActivity(data.ratings.activity || 4);
     }
 
-    obj.ratings = {
-      adoption,
-      easeOfUse,
-      activity,
-    };
+    if (proposal.type === 'frontend') {
+      setSupportedPlatforms(data.supportedPlatforms || []);
+      setHasBuiltInScraper(data.hasBuiltInScraper ?? true);
+      setThemeSupport(data.themeSupport || 'Rich');
+      setTouchOptimized(data.touchOptimized ?? false);
+      setGamepadOptimized(data.gamepadOptimized ?? true);
+      setCanReplaceHomeLauncher(data.canReplaceHomeLauncher ?? false);
+    } else {
+      setCategory(data.category || 'Retro Handheld');
+      setFormFactor(data.formFactor || 'Horizontal');
+      setTargetDevicesText(
+        Array.isArray(data.targetDevices) ? data.targetDevices.join(', ') : ''
+      );
+      setBaseSystem(data.baseSystem || 'Linux');
+      setExploitType(data.exploitType || '');
+      setDefaultFrontend(data.defaultFrontend || '');
+      if (data.features) {
+        setPortMaster(data.features.portMaster ?? null);
+        setSleepMode(data.features.sleepMode ?? true);
+        setHdmiOut(data.features.hdmiOut ?? null);
+        setOtaUpdate(data.features.otaUpdate ?? true);
+        setPluginLoader(data.features.pluginLoader ?? false);
+        setEmuNandOrSandbox(data.features.emuNandOrSandbox ?? null);
+      }
+    }
 
-    if (logoUrl) obj.logoUrl = logoUrl;
-    if (coverImageUrl) obj.coverImageUrl = coverImageUrl;
-    if (officialUrl) obj.officialUrl = officialUrl;
-    if (downloadUrl) obj.downloadUrl = downloadUrl;
-    if (githubRepo) obj.githubRepo = githubRepo;
-
-    return JSON.stringify(obj, null, 2);
-  }, [
-    targetType,
-    id,
-    name,
-    shortDesc,
-    pricing,
-    status,
-    supportedPlatforms,
-    hasBuiltInScraper,
-    themeSupport,
-    touchOptimized,
-    gamepadOptimized,
-    canReplaceHomeLauncher,
-    category,
-    formFactor,
-    targetDevicesText,
-    baseSystem,
-    exploitType,
-    defaultFrontend,
-    portMaster,
-    sleepMode,
-    hdmiOut,
-    otaUpdate,
-    pluginLoader,
-    emuNandOrSandbox,
-    adoption,
-    easeOfUse,
-    activity,
-    logoUrl,
-    coverImageUrl,
-    officialUrl,
-    downloadUrl,
-    githubRepo,
-  ]);
-
-  // Action 1: Copy TypeScript Code
-  const handleCopyCode = () => {
-    navigator.clipboard.writeText(generatedCode);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
+    setStatusMessage({
+      type: 'success',
+      text: `기여 제안 [${proposal.name}] 데이터를 폼에 불러왔습니다. 내용 확인 후 승인하여 카탈로그에 등록하세요.`,
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Action 2: Save to Supabase Database
+  // Admin: Direct Save or Approve Proposal
   const handleSaveToDb = async () => {
     if (!user) {
       openAuthModal('데이터베이스에 아이템을 저장하려면 로그인이 필요합니다.');
       return;
     }
-    if (!profile?.is_admin) {
-      setDbSaveError('데이터베이스 직접 등록/수정은 관리자(Admin) 계정만 가능합니다. 아래의 "GitHub 이슈로 제보하기"를 이용해 주세요.');
+    if (!isAdmin) {
+      setStatusMessage({
+        type: 'error',
+        text: '데이터베이스 직접 등록 및 수정은 관리자 계정만 가능합니다.',
+      });
       return;
     }
     if (!name.trim() || !id.trim()) {
-      setDbSaveError('아이템 이름과 고유 식별자(ID)를 입력해 주세요.');
+      setStatusMessage({
+        type: 'error',
+        text: '아이템 이름과 고유 식별자(ID)를 입력해 주세요.',
+      });
       return;
     }
 
-    setIsSavingDb(true);
-    setDbSaveError(null);
-    setDbSaveSuccess(false);
+    setIsSubmitting(true);
+    setStatusMessage(null);
 
     const { error } = await saveItem(previewItem, targetType);
-    setIsSavingDb(false);
+    if (error) {
+      setIsSubmitting(false);
+      setStatusMessage({
+        type: 'error',
+        text: error.message || '데이터베이스 저장 중 오류가 발생했습니다.',
+      });
+      return;
+    }
 
+    if (activeProposalId) {
+      await markProposalApproved(activeProposalId);
+      setActiveProposalId(null);
+      setStatusMessage({
+        type: 'success',
+        text: '기여 제안이 승인되어 카탈로그에 성공적으로 등록되었습니다.',
+      });
+    } else {
+      setStatusMessage({
+        type: 'success',
+        text: '카탈로그 데이터베이스에 성공적으로 저장되었습니다.',
+      });
+    }
+
+    setIsSubmitting(false);
+  };
+
+  // Regular User: Submit Community Proposal
+  const handleSubmitProposal = async () => {
+    if (!user) {
+      openAuthModal('카탈로그에 기여 제안을 등록하려면 로그인이 필요합니다.');
+      return;
+    }
+    if (!name.trim() || !id.trim()) {
+      setStatusMessage({
+        type: 'error',
+        text: '아이템 이름과 고유 식별자(ID)를 입력해 주세요.',
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    setStatusMessage(null);
+
+    const { error } = await submitProposal(previewItem, targetType);
+    setIsSubmitting(false);
 
     if (error) {
-      setDbSaveError(error.message || '데이터베이스 저장 중 오류가 발생했습니다.');
+      setStatusMessage({
+        type: 'error',
+        text: error.message || '제안 등록 중 오류가 발생했습니다.',
+      });
     } else {
-      setDbSaveSuccess(true);
-      setTimeout(() => setDbSaveSuccess(false), 3500);
+      setStatusMessage({
+        type: 'success',
+        text: '기여 제안이 정상적으로 접수되었습니다. 관리자 검토 후 카탈로그에 반영됩니다.',
+      });
     }
   };
 
-  // Action 2: GitHub Issue URL
-  const githubIssueUrl = useMemo(() => {
-    const issueTitle = encodeURIComponent(
-      `[Catalog] ${mode === 'create' ? 'Add' : 'Update'} ${name || id || 'New Item'} (${targetType.toUpperCase()})`
-    );
-
-    const issueBody = encodeURIComponent(
-      `### 🎮 Item Contribution Summary\n` +
-        `- **Name**: ${name}\n` +
-        `- **Type**: ${targetType === 'frontend' ? 'Frontend' : 'CFW / OS'}\n` +
-        `- **Slug / ID**: \`${id}\`\n` +
-        `- **Pricing**: ${pricing}\n` +
-        `- **Status**: ${status}\n` +
-        `- **Official Website**: ${officialUrl || 'N/A'}\n` +
-        `- **GitHub Repository**: ${githubRepo ? `https://github.com/${githubRepo}` : 'N/A'}\n` +
-        `- **Download URL**: ${downloadUrl || 'N/A'}\n\n` +
-        `### ⭐ 1–5 Ratings\n` +
-        `- **Adoption**: ${adoption}/5 (${RATING_DESCRIPTIONS.adoption[adoption]})\n` +
-        `- **Ease of Use**: ${easeOfUse}/5 (${RATING_DESCRIPTIONS.easeOfUse[easeOfUse]})\n` +
-        `- **Activity**: ${activity}/5 (${RATING_DESCRIPTIONS.activity[activity]})\n\n` +
-        `### 📝 Description\n${shortDesc}\n\n` +
-        `### 💻 TypeScript Object Code\n\`\`\`typescript\n${generatedCode}\n\`\`\`\n\n` +
-        `---\n*Generated with QuinutDB Catalog Editor (db.quinut.xyz/edit)*`
-    );
-
-    return `https://github.com/quinut/db/issues/new?title=${issueTitle}&body=${issueBody}`;
-  }, [
-    name,
-    id,
-    mode,
-    targetType,
-    pricing,
-    status,
-    officialUrl,
-    githubRepo,
-    downloadUrl,
-    adoption,
-    easeOfUse,
-    activity,
-    shortDesc,
-    generatedCode,
-  ]);
 
   return (
     <div className="min-h-screen bg-[#f5f5f5] text-[#0a0a0a] flex flex-col antialiased">
@@ -718,36 +716,15 @@ export default function EditPage({ onNavigateHome }: EditPageProps) {
             <div className="h-4 w-px bg-[#e5e5e5] hidden sm:block" />
             <div className="flex items-center gap-2">
               <span className="text-[16px] font-semibold tracking-[-0.4px] text-[#0a0a0a]">
-                Catalog Web Editor
+                Catalog Editor
               </span>
               <span className="rounded-[18px] bg-[#0a0a0a] px-2 py-0.5 text-[10px] font-medium text-[#fafafa]">
-                PR Assistant
+                Database
               </span>
             </div>
           </div>
 
-          {/* Quick Actions */}
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleCopyCode}
-              className="inline-flex items-center gap-1.5 rounded-[18px] bg-[#0a0a0a] px-3.5 py-1.5 text-[12px] font-medium text-[#fafafa] hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
-            >
-              {copied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
-              <span>{copied ? '복사 완료!' : 'TS 코드 복사'}</span>
-            </button>
-
-            <a
-              href={githubIssueUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-[18px] border border-[#e5e5e5] bg-[#ffffff] px-3 py-1.5 text-[12px] font-medium text-[#0a0a0a] hover:bg-[#f5f5f5] transition-colors"
-            >
-              <ExternalLink size={14} />
-              <span className="hidden sm:inline">GitHub 이슈 제보</span>
-            </a>
-
-            {/* User Auth Section */}
             {user ? (
               <div className="flex items-center gap-1.5 p-0.5 pr-2.5 rounded-[18px] border border-[#e5e5e5] bg-[#fafafa]">
                 {profile?.avatar_url ? (
@@ -761,10 +738,10 @@ export default function EditPage({ onNavigateHome }: EditPageProps) {
                     {(profile?.username || user.email || 'U').slice(0, 1).toUpperCase()}
                   </div>
                 )}
-                <span className="text-[12px] font-medium text-[#0a0a0a] max-w-[80px] truncate hidden sm:inline">
+                <span className="text-[12px] font-medium text-[#0a0a0a] max-w-[90px] truncate hidden sm:inline">
                   {profile?.username || user.user_metadata?.user_name || 'User'}
                 </span>
-                {profile?.is_admin && (
+                {isAdmin && (
                   <span className="rounded-[6px] bg-[#0a0a0a] px-1.5 py-0.2 text-[8px] font-bold text-[#fafafa]">
                     ADMIN
                   </span>
@@ -776,6 +753,7 @@ export default function EditPage({ onNavigateHome }: EditPageProps) {
                 onClick={() => openAuthModal()}
                 className="inline-flex items-center gap-1.5 rounded-[18px] bg-[#0a0a0a] px-3 py-1.5 text-[12px] font-medium text-[#fafafa] hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
               >
+                <LogIn size={13} />
                 <span>로그인</span>
               </button>
             )}
@@ -789,7 +767,7 @@ export default function EditPage({ onNavigateHome }: EditPageProps) {
       {/* ============================================================ */}
       <section className="border-b border-[#e5e5e5] bg-[#ffffff] py-3">
         <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          {/* Mode Selector: Create vs Edit */}
+          {/* Mode Selector: Create vs Edit vs Proposals */}
           <div className="flex items-center gap-2">
             <span className="text-[12px] font-medium text-[#737373]">작업 모드:</span>
             <div className="inline-flex rounded-[18px] border border-[#e5e5e5] bg-[#fafafa] p-0.5 shadow-2xs">
@@ -818,6 +796,26 @@ export default function EditPage({ onNavigateHome }: EditPageProps) {
                 <Edit3 size={13} />
                 <span>기존 아이템 수정</span>
               </button>
+
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={() => handleModeChange('proposals')}
+                  className={`inline-flex items-center gap-1.5 rounded-[16px] px-3 py-1 text-[12px] font-medium transition-all cursor-pointer ${
+                    mode === 'proposals'
+                      ? 'bg-[#0a0a0a] text-[#fafafa] shadow-xs'
+                      : 'text-[#737373] hover:text-[#0a0a0a]'
+                  }`}
+                >
+                  <Inbox size={13} />
+                  <span>기여 제안 검토</span>
+                  {pendingCount > 0 && (
+                    <span className="rounded-full bg-rose-500 px-1.5 py-0.2 text-[10px] font-bold text-white leading-none">
+                      {pendingCount}
+                    </span>
+                  )}
+                </button>
+              )}
             </div>
           </div>
 
@@ -833,10 +831,128 @@ export default function EditPage({ onNavigateHome }: EditPageProps) {
       </section>
 
       {/* ============================================================ */}
-      {/* 3. Main Workspace: 2-Column Responsive Layout                */}
+      {/* 3. Main Workspace: Proposals View or 2-Column Form           */}
       {/* ============================================================ */}
       <main className="flex-1 w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {mode === 'proposals' ? (
+          <div className="flex flex-col gap-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-[24px] border border-[#e5e5e5] bg-[#ffffff] p-6 shadow-xs">
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-2">
+                  <Inbox size={18} className="text-[#0a0a0a]" />
+                  <h2 className="text-[16px] font-bold text-[#0a0a0a]">
+                    커뮤니티 기여 제안 대기열
+                  </h2>
+                  <span className="rounded-[12px] bg-[#0a0a0a] px-2 py-0.5 text-[11px] font-semibold text-[#fafafa]">
+                    {pendingCount}건 대기 중
+                  </span>
+                </div>
+                <p className="text-[13px] text-[#737373]">
+                  일반 사용자들이 제출한 신규 아이템 및 수정 제안을 검토하고 카탈로그에 승인 반영하거나 반려할 수 있습니다.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => fetchProposals()}
+                disabled={proposalsLoading}
+                className="inline-flex items-center gap-1.5 self-start sm:self-auto rounded-[18px] border border-[#e5e5e5] bg-[#fafafa] px-3.5 py-2 text-[12px] font-medium text-[#0a0a0a] hover:bg-[#e5e5e5] transition-colors cursor-pointer"
+              >
+                <RotateCcw size={13} className={proposalsLoading ? 'animate-spin' : ''} />
+                <span>새로고침</span>
+              </button>
+            </div>
+
+            {proposalsLoading ? (
+              <div className="flex flex-col items-center justify-center p-16 rounded-[24px] border border-[#e5e5e5] bg-[#ffffff]">
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#0a0a0a] border-t-transparent mb-3" />
+                <span className="text-[13px] text-[#737373]">기여 제안 목록을 불러오는 중입니다...</span>
+              </div>
+            ) : proposals.length === 0 ? (
+              <div className="flex flex-col items-center justify-center p-16 rounded-[24px] border border-[#e5e5e5] bg-[#ffffff] text-center">
+                <Inbox size={40} className="text-[#a3a3a3] mb-3 stroke-[1.5]" />
+                <span className="text-[14px] font-semibold text-[#0a0a0a]">대기 중인 기여 제안이 없습니다</span>
+                <span className="text-[12px] text-[#737373] mt-1">새로운 제안이 접수되면 이곳에 표시됩니다.</span>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {proposals.map((prop) => {
+                  const data = prop.data as any;
+                  return (
+                    <div
+                      key={prop.id}
+                      className="rounded-[24px] border border-[#e5e5e5] bg-[#ffffff] p-5 shadow-xs flex flex-col justify-between gap-4 transition-all hover:border-[#a3a3a3]"
+                    >
+                      <div className="flex flex-col gap-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="rounded-[8px] bg-[#f5f5f5] px-2 py-0.5 text-[10px] font-bold text-[#737373] uppercase shrink-0">
+                              {prop.type}
+                            </span>
+                            <span
+                              className={`rounded-[8px] px-2 py-0.5 text-[10px] font-semibold shrink-0 ${
+                                prop.status === 'pending'
+                                  ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                                  : prop.status === 'approved'
+                                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                  : 'bg-rose-50 text-rose-700 border border-rose-200'
+                              }`}
+                            >
+                              {prop.status === 'pending'
+                                ? '검토 대기'
+                                : prop.status === 'approved'
+                                ? '승인 완료'
+                                : '반려됨'}
+                            </span>
+                          </div>
+                          <span className="text-[11px] text-[#a3a3a3] shrink-0">
+                            {new Date(prop.created_at).toLocaleDateString()}
+                          </span>
+                        </div>
+
+                        <div>
+                          <h3 className="text-[15px] font-bold text-[#0a0a0a] truncate">
+                            {prop.name}
+                          </h3>
+                          <span className="text-[11px] text-[#737373] font-mono">
+                            ID: {data?.id || prop.item_id || '-'}
+                          </span>
+                          {data?.shortDesc && (
+                            <p className="text-[12px] text-[#525252] mt-1 line-clamp-2">
+                              {data.shortDesc}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 pt-3 border-t border-[#f5f5f5]">
+                        <button
+                          type="button"
+                          onClick={() => handleLoadProposal(prop)}
+                          className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-[16px] bg-[#0a0a0a] py-2 text-[12px] font-medium text-[#fafafa] hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+                        >
+                          <Edit3 size={12} />
+                          <span>불러와서 검토</span>
+                        </button>
+                        {prop.status === 'pending' && (
+                          <button
+                            type="button"
+                            onClick={() => rejectProposal(prop.id)}
+                            className="inline-flex items-center justify-center gap-1 rounded-[16px] border border-rose-200 bg-rose-50 px-3 py-2 text-[12px] font-medium text-rose-700 hover:bg-rose-100 transition-colors cursor-pointer"
+                          >
+                            <Trash2 size={12} />
+                            <span>반려</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* ---------------------------------------------------------- */}
           {/* Left Column (col-span-7): Form Inputs                      */}
           {/* ---------------------------------------------------------- */}
@@ -1208,8 +1324,9 @@ export default function EditPage({ onNavigateHome }: EditPageProps) {
                               : 'bg-[#fafafa] text-[#171717] border border-[#e5e5e5] hover:border-[#737373]'
                           }`}
                         >
-                          {theme} {theme === 'Rich' ? '🎨' : theme === 'Basic' ? '📐' : '🚫'}
+                          {theme}
                         </button>
+
                       );
                     })}
                   </div>
@@ -1443,104 +1560,124 @@ export default function EditPage({ onNavigateHome }: EditPageProps) {
               </div>
             </div>
 
-            {/* Bottom: Generated TypeScript Object Code Viewer */}
-            <div className="rounded-[24px] border border-[#e5e5e5] bg-[#ffffff] p-5 shadow-xs flex flex-col gap-3.5">
+            {/* Bottom: Action Card (Admin direct save / User proposal submit) */}
+            <div className="rounded-[24px] border border-[#e5e5e5] bg-[#ffffff] p-5 shadow-xs flex flex-col gap-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Code2 size={15} className="text-[#737373]" />
+                  <Send size={15} className="text-[#737373]" />
                   <span className="text-[13px] font-semibold text-[#0a0a0a]">
-                    생성된 TypeScript 코드
+                    {isAdmin ? '카탈로그 관리 및 저장' : '커뮤니티 기여 제출'}
                   </span>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleCopyCode}
-                  className="inline-flex items-center gap-1 rounded-[14px] border border-[#e5e5e5] bg-[#fafafa] px-2.5 py-1 text-[11px] font-medium text-[#0a0a0a] hover:bg-[#e5e5e5] transition-colors cursor-pointer"
-                >
-                  {copied ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
-                  <span>{copied ? '복사됨' : '복사'}</span>
-                </button>
+                {activeProposalId && (
+                  <span className="rounded-[10px] bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800">
+                    제안 검토 중
+                  </span>
+                )}
               </div>
 
-              {/* Monochromatic code viewer block */}
-              <div className="relative max-h-[300px] overflow-auto rounded-[16px] border border-[#e5e5e5] bg-[#0a0a0a] p-4 text-[11px] font-mono text-[#fafafa] leading-relaxed select-all">
-                <pre>{generatedCode}</pre>
-              </div>
-
-              {/* Export Actions Box */}
-              <div className="flex flex-col gap-2 pt-2 border-t border-[#e5e5e5]">
-                {dbSaveSuccess && (
-                  <div className="flex items-center gap-2 p-2.5 rounded-[14px] bg-[#f0fdf4] border border-[#bbf7d0] text-[#166534] text-[12px] font-medium">
-                    <CheckCircle2 size={15} />
-                    <span>✓ 데이터베이스에 성공적으로 저장되었습니다!</span>
-                  </div>
-                )}
-                {dbSaveError && (
-                  <div className="flex items-center gap-2 p-2.5 rounded-[14px] bg-[#fef2f2] border border-[#fecaca] text-[#991b1b] text-[12px] font-medium">
-                    <AlertCircle size={15} />
-                    <span>{dbSaveError}</span>
-                  </div>
-                )}
-
-                {/* 1. Database Direct Save Button (Admin Only) */}
-                {profile?.is_admin ? (
-                  <button
-                    type="button"
-                    onClick={handleSaveToDb}
-                    disabled={isSavingDb}
-                    className="inline-flex h-[42px] w-full items-center justify-center gap-2 rounded-[18px] bg-[#0a0a0a] px-4 text-[13px] font-medium text-[#fafafa] hover:opacity-90 disabled:opacity-50 transition-opacity cursor-pointer shadow-xs"
-                  >
-                    <Database size={15} />
-                    <span>
-                      {isSavingDb
-                        ? '데이터베이스 저장 중...'
-                        : '💾 데이터베이스(Supabase)에 즉시 저장'}
-                    </span>
-                    <span className="rounded-[6px] bg-[#262626] px-1.5 py-0.2 text-[9px] font-bold text-amber-400">
-                      ADMIN
-                    </span>
-                  </button>
-                ) : (
-                  <div className="flex items-center gap-2 p-2.5 rounded-[14px] bg-[#fafafa] border border-[#e5e5e5] text-[#737373] text-[11px]">
-                    <span className="shrink-0 font-bold text-[#0a0a0a]">🛡️ 관리자 전용:</span>
-                    <span>직접 DB 반영은 관리자만 가능합니다. 일반 기여는 아래 GitHub 이슈 제보를 이용해 주세요.</span>
-                  </div>
-                )}
-
-
-                {/* 2. Copy TypeScript Code */}
-                <button
-                  type="button"
-                  onClick={handleCopyCode}
-                  className="inline-flex h-[40px] w-full items-center justify-center gap-2 rounded-[18px] border border-[#e5e5e5] bg-[#ffffff] px-4 text-[13px] font-medium text-[#0a0a0a] hover:bg-[#f5f5f5] transition-colors cursor-pointer shadow-2xs"
+              {/* Status Message */}
+              {statusMessage && (
+                <div
+                  className={`flex items-start gap-2 p-3 rounded-[16px] text-[12px] leading-relaxed ${
+                    statusMessage.type === 'success'
+                      ? 'bg-[#f0fdf4] border border-[#bbf7d0] text-[#166534]'
+                      : 'bg-[#fef2f2] border border-[#fecaca] text-[#991b1b]'
+                  }`}
                 >
-                  {copied ? (
-                    <>
-                      <CheckCircle2 size={16} className="text-emerald-600" />
-                      <span>클립보드 복사 완료!</span>
-                    </>
+                  {statusMessage.type === 'success' ? (
+                    <CheckCircle2 size={15} className="shrink-0 mt-0.5" />
                   ) : (
-                    <>
-                      <Copy size={16} />
-                      <span>📋 TypeScript 코드 복사하기 (기여용)</span>
-                    </>
+                    <AlertCircle size={15} className="shrink-0 mt-0.5" />
                   )}
-                </button>
+                  <span>{statusMessage.text}</span>
+                </div>
+              )}
 
-                {/* 3. GitHub Issue Submission */}
-                <a
-                  href={githubIssueUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex h-[40px] w-full items-center justify-center gap-2 rounded-[18px] border border-[#e5e5e5] bg-[#fafafa] px-4 text-[13px] font-medium text-[#737373] hover:text-[#0a0a0a] hover:bg-[#e5e5e5] transition-colors shadow-2xs"
-                >
-                  <ExternalLink size={15} />
-                  <span>🐙 GitHub 이슈로 제보하기 (코드 자동 첨부)</span>
-                </a>
+              {/* Action Buttons */}
+              <div className="flex flex-col gap-2.5">
+                {isAdmin ? (
+                  <>
+                    {activeProposalId && (
+                      <div className="rounded-[16px] border border-amber-200 bg-amber-50/70 p-3 flex flex-col gap-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] font-semibold text-amber-900">
+                            검토 중인 기여 제안 ID: {activeProposalId.slice(0, 8)}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveProposalId(null);
+                              setStatusMessage(null);
+                            }}
+                            className="text-[11px] font-medium text-amber-800 hover:underline cursor-pointer"
+                          >
+                            검토 취소
+                          </button>
+                        </div>
+                        <p className="text-[11px] text-amber-800">
+                          승인 시 카탈로그 DB에 즉시 등록되며 제안 상태가 승인 완료로 변경됩니다.
+                        </p>
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={handleSaveToDb}
+                      disabled={isSubmitting || errors.length > 0}
+                      className="inline-flex h-[44px] w-full items-center justify-center gap-2 rounded-[18px] bg-[#0a0a0a] px-4 text-[13px] font-medium text-[#fafafa] hover:opacity-90 disabled:opacity-40 transition-all cursor-pointer shadow-xs"
+                    >
+                      <Database size={15} />
+                      <span>
+                        {isSubmitting
+                          ? '데이터베이스 저장 중...'
+                          : activeProposalId
+                          ? '기여 제안 승인 및 카탈로그 등록'
+                          : '카탈로그 데이터베이스에 즉시 저장'}
+                      </span>
+                      <span className="rounded-[6px] bg-[#262626] px-1.5 py-0.2 text-[9px] font-bold text-amber-400">
+                        ADMIN
+                      </span>
+                    </button>
+                    <p className="text-[11px] text-[#737373] text-center px-1">
+                      관리자 권한으로 Supabase public.items 테이블에 즉시 영구 저장됩니다.
+                    </p>
+                  </>
+                ) : user ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={handleSubmitProposal}
+                      disabled={isSubmitting || errors.length > 0}
+                      className="inline-flex h-[44px] w-full items-center justify-center gap-2 rounded-[18px] bg-[#0a0a0a] px-4 text-[13px] font-medium text-[#fafafa] hover:opacity-90 disabled:opacity-40 transition-all cursor-pointer shadow-xs"
+                    >
+                      <Send size={15} />
+                      <span>{isSubmitting ? '제안 전송 중...' : '기여 제안 제출하기'}</span>
+                    </button>
+                    <p className="text-[11px] text-[#737373] text-center px-1 leading-relaxed">
+                      작성하신 데이터는 관리자 검토 큐로 전송되며, 검토 완료 후 공식 카탈로그에 반영됩니다.
+                    </p>
+                  </>
+                ) : (
+                  <div className="flex flex-col gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => openAuthModal('카탈로그 기여 제안을 작성하려면 로그인이 필요합니다.')}
+                      className="inline-flex h-[44px] w-full items-center justify-center gap-2 rounded-[18px] bg-[#0a0a0a] px-4 text-[13px] font-medium text-[#fafafa] hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+                    >
+                      <LogIn size={15} />
+                      <span>로그인 후 기여 제안 제출</span>
+                    </button>
+                    <p className="text-[11px] text-[#737373] text-center px-1 leading-relaxed">
+                      스팸 방지 및 기여자 크레딧 등록을 위해 GitHub 로그인이 필요합니다.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </aside>
         </div>
+        )}
       </main>
     </div>
   );

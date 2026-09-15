@@ -23,50 +23,50 @@ export const TriStateIndicator: React.FC<{
 }> = ({ value, label }) => {
   if (value === true) {
     return (
-      <span
-        title={`${label}: Supported`}
-        className="inline-flex items-center gap-1 rounded-[18px] bg-[#f0fdf4] border border-[#bbf7d0] px-2 py-0.5 text-[11px] font-medium text-[#166534]"
-      >
-        <svg
-          className="h-3 w-3 stroke-[2.5]"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <polyline points="20 6 9 17 4 12" />
-        </svg>
-        <span>{label}</span>
-      </span>
+<span
+         title={`${label}: 지원됨`}
+         className="inline-flex items-center gap-1 rounded-[18px] bg-[#f0fdf4] border border-[#bbf7d0] px-2 py-0.5 text-[11px] font-medium text-[#166534]"
+       >
+         <svg
+           className="h-3 w-3 stroke-[2.5]"
+           viewBox="0 0 24 24"
+           fill="none"
+           stroke="currentColor"
+           strokeLinecap="round"
+           strokeLinejoin="round"
+         >
+           <polyline points="20 6 9 17 4 12" />
+         </svg>
+         <span>{label}</span>
+       </span>
     );
   }
 
   if (value === false) {
     return (
-      <span
-        title={`${label}: Not Supported`}
-        className="inline-flex items-center gap-1 rounded-[18px] bg-[#fef2f2] border border-[#fecaca] px-2 py-0.5 text-[11px] font-medium text-[#991b1b]"
-      >
-        <svg
-          className="h-3 w-3 stroke-[2.5]"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <line x1="18" y1="6" x2="6" y2="18" />
-          <line x1="6" y1="6" x2="18" y2="18" />
-        </svg>
-        <span>{label}</span>
-      </span>
+<span
+         title={`${label}: 지원 안 됨`}
+         className="inline-flex items-center gap-1 rounded-[18px] bg-[#fef2f2] border border-[#fecaca] px-2 py-0.5 text-[11px] font-medium text-[#991b1b]"
+       >
+         <svg
+           className="h-3 w-3 stroke-[2.5]"
+           viewBox="0 0 24 24"
+           fill="none"
+           stroke="currentColor"
+           strokeLinecap="round"
+           strokeLinejoin="round"
+         >
+           <line x1="18" y1="6" x2="6" y2="18" />
+           <line x1="6" y1="6" x2="18" y2="18" />
+         </svg>
+         <span>{label}</span>
+       </span>
     );
   }
 
   return (
     <span
-      title={`${label}: Unknown / Unverified`}
+      title={`${label}: 알 수 없음 / 미확인`}
       className="inline-flex items-center gap-1 rounded-[18px] bg-[#f5f5f5] border border-[#e5e5e5] px-2 py-0.5 text-[11px] font-medium text-[#737373]"
     >
       <span className="text-[10px] font-mono leading-none">?</span>
@@ -76,30 +76,38 @@ export const TriStateIndicator: React.FC<{
 };
 
 // 2. Pricing Badge Helper
+const PRICING_LABELS: Record<PricingModel, string> = {
+  'Free & Open Source': '무료 & 오픈소스',
+  'Free': '무료',
+  'Freemium': '프리미엄',
+  'Paid': '유료',
+};
+
 export const PricingBadge: React.FC<{ pricing: PricingModel }> = ({ pricing }) => {
+  const label = PRICING_LABELS[pricing] || pricing;
   switch (pricing) {
     case 'Free & Open Source':
       return (
         <span className="rounded-[18px] bg-[#0a0a0a]/80 backdrop-blur-md px-2.5 py-0.5 text-[11px] font-medium text-[#fafafa] border border-white/10">
-          FOSS
+          {label}
         </span>
       );
     case 'Free':
       return (
         <span className="rounded-[18px] bg-[#ffffff]/90 backdrop-blur-md px-2.5 py-0.5 text-[11px] font-medium text-[#0a0a0a] border border-[#e5e5e5] shadow-xs">
-          Free
+          {label}
         </span>
       );
     case 'Freemium':
       return (
         <span className="rounded-[18px] bg-[#fafafa]/90 backdrop-blur-md px-2.5 py-0.5 text-[11px] font-medium text-[#171717] border border-[#e5e5e5]">
-          Freemium
+          {label}
         </span>
       );
     case 'Paid':
       return (
         <span className="rounded-[18px] bg-[#171717]/90 backdrop-blur-md px-2.5 py-0.5 text-[11px] font-medium text-[#fafafa] border border-white/20">
-          Paid
+          {label}
         </span>
       );
     default:
@@ -109,26 +117,32 @@ export const PricingBadge: React.FC<{ pricing: PricingModel }> = ({ pricing }) =
 
 // 3. Status Dot Helper
 export const StatusIndicator: React.FC<{ status: ProjectStatus }> = ({ status }) => {
+  const STATUS_LABELS: Record<ProjectStatus, string> = {
+  Active: '활성',
+  Stale: '정체',
+  Discontinued: '중단',
+};
+
   const getStatusConfig = () => {
     switch (status) {
       case 'Active':
         return {
           dotClass: 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]',
           textClass: 'text-emerald-950 bg-emerald-50/90 border-emerald-200/80',
-          label: 'Active'
+          label: STATUS_LABELS.Active
         };
       case 'Stale':
         return {
           dotClass: 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]',
           textClass: 'text-amber-950 bg-amber-50/90 border-amber-200/80',
-          label: 'Stale'
+          label: STATUS_LABELS.Stale
         };
       case 'Discontinued':
       default:
         return {
           dotClass: 'bg-[#737373]',
           textClass: 'text-[#171717] bg-[#f5f5f5]/90 border-[#e5e5e5]',
-          label: status || 'Unknown'
+          label: STATUS_LABELS[status] || '알 수 없음'
         };
     }
   };
@@ -269,12 +283,12 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, type, communityStats, 
                 ))}
               </div>
 
-              {/* Key Features TriState Badges */}
-              <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                <TriStateIndicator value={frontend.hasBuiltInScraper} label="Scraper" />
-                <TriStateIndicator value={frontend.touchOptimized} label="Touch" />
-                <TriStateIndicator value={frontend.gamepadOptimized} label="Gamepad" />
-              </div>
+{/* Key Features TriState Badges */}
+               <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                 <TriStateIndicator value={frontend.hasBuiltInScraper} label="스크래퍼" />
+                 <TriStateIndicator value={frontend.touchOptimized} label="터치" />
+                 <TriStateIndicator value={frontend.gamepadOptimized} label="게임패드" />
+               </div>
             </>
           )}
 
@@ -305,10 +319,10 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, type, communityStats, 
         <div className="mt-4 pt-3 border-t border-[#e5e5e5] flex items-center justify-between">
           <div className="text-[12px] text-[#737373]">
             {isFrontend && frontend?.themeSupport && (
-              <span>Theme: <strong className="text-[#0a0a0a] font-medium">{frontend.themeSupport}</strong></span>
+              <span>테마: <strong className="text-[#0a0a0a] font-medium">{frontend.themeSupport}</strong></span>
             )}
             {!isFrontend && cfw?.defaultFrontend && (
-              <span>Default UI: <strong className="text-[#0a0a0a] font-medium">{cfw.defaultFrontend}</strong></span>
+              <span>기본 UI: <strong className="text-[#0a0a0a] font-medium">{cfw.defaultFrontend}</strong></span>
             )}
           </div>
 
@@ -321,8 +335,8 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, type, communityStats, 
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={e => e.stopPropagation()}
-                title="Official Website"
-                aria-label="Official Website"
+                title="공식 웹사이트"
+                aria-label="공식 웹사이트"
                 className="flex h-7 w-7 items-center justify-center rounded-[14px] border border-[#e5e5e5] bg-[#ffffff] text-[#737373] transition-colors hover:border-[#0a0a0a] hover:text-[#0a0a0a] hover:bg-[#f5f5f5]"
               >
                 <Globe size={14} strokeWidth={2} className="shrink-0" />
@@ -337,7 +351,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, type, communityStats, 
                 rel="noopener noreferrer"
                 onClick={e => e.stopPropagation()}
                 title={`GitHub: ${item.githubRepo}`}
-                aria-label="GitHub Repository"
+                aria-label="깃허브 저장소"
                 className="flex h-7 w-7 items-center justify-center rounded-[14px] border border-[#e5e5e5] bg-[#ffffff] text-[#737373] transition-colors hover:border-[#0a0a0a] hover:text-[#0a0a0a] hover:bg-[#f5f5f5]"
               >
                 <svg
@@ -364,8 +378,8 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, type, communityStats, 
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={e => e.stopPropagation()}
-                title="Download / Release"
-                aria-label="Download"
+                title="다운로드 / 릴리스"
+                aria-label="다운로드"
                 className="flex h-7 w-7 items-center justify-center rounded-[14px] bg-[#0a0a0a] text-[#fafafa] transition-opacity hover:opacity-90"
               >
                 <Download size={14} strokeWidth={2} className="shrink-0" />
