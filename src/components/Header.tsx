@@ -87,7 +87,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigateEdit }) => {
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Support me on Ko-fi"
-            className="group inline-flex h-[36px] items-center gap-2 rounded-[18px] border border-[#e5e5e5] bg-transparent px-3 text-[13px] font-medium text-[#0a0a0a] transition-colors hover:bg-[#f5f5f5]"
+            className="group inline-flex h-[36px] items-center gap-2 rounded-[18px] border border-[#e5e5e5] bg-[#fafafa] px-3 text-[13px] font-medium text-[#0a0a0a] transition-colors hover:bg-[#e5e5e5]"
           >
             <Coffee size={16} className="shrink-0 text-[#737373] group-hover:text-[#0a0a0a] transition-colors" />
             <span className="hidden sm:inline">{t.common.donate}</span>
