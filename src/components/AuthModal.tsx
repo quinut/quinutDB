@@ -28,7 +28,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     setLoadingGoogle(true);
     const { error } = await signInWithGoogle();
     if (error) {
-      setErrorMessage(error.message || 'Google 로그인 중 오류가 발생했습니다.');
+      if (
+        error.message?.includes('provider is not enabled') ||
+        error.message?.includes('validation_failed')
+      ) {
+        setErrorMessage(
+          'Supabase 대시보드에서 Google Provider 활성화 및 Google Client ID/Secret 설정이 필요합니다.'
+        );
+      } else {
+        setErrorMessage(error.message || 'Google 로그인 중 오류가 발생했습니다.');
+      }
       setLoadingGoogle(false);
     }
   };
