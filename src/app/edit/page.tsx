@@ -630,6 +630,10 @@ export default function EditPage({ onNavigateHome }: EditPageProps) {
       openAuthModal('데이터베이스에 아이템을 저장하려면 로그인이 필요합니다.');
       return;
     }
+    if (!profile?.is_admin) {
+      setDbSaveError('데이터베이스 직접 등록/수정은 관리자(Admin) 계정만 가능합니다. 아래의 "GitHub 이슈로 제보하기"를 이용해 주세요.');
+      return;
+    }
     if (!name.trim() || !id.trim()) {
       setDbSaveError('아이템 이름과 고유 식별자(ID)를 입력해 주세요.');
       return;
@@ -641,6 +645,7 @@ export default function EditPage({ onNavigateHome }: EditPageProps) {
 
     const { error } = await saveItem(previewItem, targetType);
     setIsSavingDb(false);
+
 
     if (error) {
       setDbSaveError(error.message || '데이터베이스 저장 중 오류가 발생했습니다.');
@@ -1429,7 +1434,7 @@ export default function EditPage({ onNavigateHome }: EditPageProps) {
                     실시간 카드 라이브 프리뷰
                   </span>
                 </div>
-                <span className="text-[11px] text-[#737373]">Live Card Preview</span>
+                <span className="text-[11px] text-[#737373]">실시간 카드 미리보기</span>
               </div>
 
               {/* Render actual ItemCard with current preview data */}
@@ -1477,20 +1482,31 @@ export default function EditPage({ onNavigateHome }: EditPageProps) {
                   </div>
                 )}
 
-                {/* 1. Database Direct Save Button */}
-                <button
-                  type="button"
-                  onClick={handleSaveToDb}
-                  disabled={isSavingDb}
-                  className="inline-flex h-[42px] w-full items-center justify-center gap-2 rounded-[18px] bg-[#0a0a0a] px-4 text-[13px] font-medium text-[#fafafa] hover:opacity-90 disabled:opacity-50 transition-opacity cursor-pointer shadow-xs"
-                >
-                  <Database size={15} />
-                  <span>
-                    {isSavingDb
-                      ? '데이터베이스 저장 중...'
-                      : '💾 데이터베이스(Supabase)에 즉시 저장'}
-                  </span>
-                </button>
+                {/* 1. Database Direct Save Button (Admin Only) */}
+                {profile?.is_admin ? (
+                  <button
+                    type="button"
+                    onClick={handleSaveToDb}
+                    disabled={isSavingDb}
+                    className="inline-flex h-[42px] w-full items-center justify-center gap-2 rounded-[18px] bg-[#0a0a0a] px-4 text-[13px] font-medium text-[#fafafa] hover:opacity-90 disabled:opacity-50 transition-opacity cursor-pointer shadow-xs"
+                  >
+                    <Database size={15} />
+                    <span>
+                      {isSavingDb
+                        ? '데이터베이스 저장 중...'
+                        : '💾 데이터베이스(Supabase)에 즉시 저장'}
+                    </span>
+                    <span className="rounded-[6px] bg-[#262626] px-1.5 py-0.2 text-[9px] font-bold text-amber-400">
+                      ADMIN
+                    </span>
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-2 p-2.5 rounded-[14px] bg-[#fafafa] border border-[#e5e5e5] text-[#737373] text-[11px]">
+                    <span className="shrink-0 font-bold text-[#0a0a0a]">🛡️ 관리자 전용:</span>
+                    <span>직접 DB 반영은 관리자만 가능합니다. 일반 기여는 아래 GitHub 이슈 제보를 이용해 주세요.</span>
+                  </div>
+                )}
+
 
                 {/* 2. Copy TypeScript Code */}
                 <button
