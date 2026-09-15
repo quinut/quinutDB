@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Globe, Download } from 'lucide-react';
+import { Globe, Download, Star } from 'lucide-react';
 import {
   FrontendItem,
   OSFirmwareItem,
@@ -164,10 +164,13 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, type, communityStats, 
   const frontend = isFrontend ? (item as FrontendItem) : null;
   const cfw = !isFrontend ? (item as OSFirmwareItem) : null;
 
-  const hasCommunity = Boolean(communityStats && communityStats.voteCount > 0);
-  const displayAdoption = hasCommunity ? communityStats!.avgAdoption.toFixed(1) : item.ratings?.adoption;
-  const displayEase = hasCommunity ? communityStats!.avgEaseOfUse.toFixed(1) : item.ratings?.easeOfUse;
-  const displayActivity = hasCommunity ? communityStats!.avgActivity.toFixed(1) : item.ratings?.activity;
+  const qAdoption = item.ratings?.adoption;
+  const qEase = item.ratings?.easeOfUse;
+  const qActivity = item.ratings?.activity;
+
+  const hasUserScore = Boolean(communityStats && communityStats.totalRatings > 0);
+  const avgUserScore = communityStats ? communityStats.avgUserScore : 0;
+  const totalUserRatings = communityStats ? communityStats.totalRatings : 0;
 
   return (
     <article
@@ -209,7 +212,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, type, communityStats, 
       {/* ============================================================ */}
       <div className="flex flex-1 flex-col p-4">
         {/* Name & Short Description */}
-        <div className="flex flex-col gap-1 mb-3">
+        <div className="flex flex-col gap-1 mb-2.5">
           <h3 className="text-[16px] font-bold tracking-tight text-[#0a0a0a] group-hover:text-neutral-600 transition-colors">
             {item.name}
           </h3>
@@ -218,34 +221,58 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, type, communityStats, 
           </p>
         </div>
 
-        {/* Ratings Pills (Adoption, Ease, Activity) */}
+        {/* Score Header: qScore badge + userScore pill */}
+        <div className="flex items-center justify-between mb-1.5 px-0.5">
+          <div className="flex items-center gap-1">
+            <span className="rounded-[6px] bg-[#0a0a0a] text-[#ffffff] px-1.5 py-0.2 text-[9.5px] font-bold tracking-tight">
+              qScore
+            </span>
+          </div>
+          {hasUserScore ? (
+            <div
+              title={`${t.userScore.title}: ${avgUserScore.toFixed(1)}/5 (${totalUserRatings})`}
+              className="flex items-center gap-1 text-[11px] font-semibold text-[#0a0a0a] bg-[#fafafa] border border-[#e5e5e5] rounded-[10px] px-1.5 py-0.5"
+            >
+              <Star size={11} className="fill-[#0a0a0a] text-[#0a0a0a]" />
+              <span>{avgUserScore.toFixed(1)}</span>
+              <span className="text-[9.5px] font-normal text-[#737373]">({totalUserRatings})</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1 text-[10px] text-[#a3a3a3] font-medium">
+              <Star size={10} className="text-[#a3a3a3]" />
+              <span>userScore —</span>
+            </div>
+          )}
+        </div>
+
+        {/* qScore 3-Benchmark Pills (Adoption, Ease, Activity) */}
         {item.ratings && (
           <div className="grid grid-cols-3 gap-1.5 mb-3">
             <div
-              title={`${t.filter.adoptionLabel}: ${displayAdoption}/5`}
+              title={`${t.filter.adoptionLabel}: ${qAdoption}/5`}
               className="flex flex-col items-center justify-center py-1.5 px-1 rounded-[12px] bg-[#fafafa] border border-[#e5e5e5] shadow-2xs"
             >
               <span className="text-[10px] font-medium text-[#737373] tracking-tight">{t.filter.adoptionLabel}</span>
               <span className="text-[13px] font-semibold text-[#0a0a0a] leading-none mt-1">
-                {displayAdoption}<span className="text-[10px] font-normal text-[#737373]">/5</span>
+                {qAdoption}<span className="text-[10px] font-normal text-[#737373]">/5</span>
               </span>
             </div>
             <div
-              title={`${t.filter.easeOfUseLabel}: ${displayEase}/5`}
+              title={`${t.filter.easeOfUseLabel}: ${qEase}/5`}
               className="flex flex-col items-center justify-center py-1.5 px-1 rounded-[12px] bg-[#fafafa] border border-[#e5e5e5] shadow-2xs"
             >
               <span className="text-[10px] font-medium text-[#737373] tracking-tight">{t.filter.easeOfUseLabel}</span>
               <span className="text-[13px] font-semibold text-[#0a0a0a] leading-none mt-1">
-                {displayEase}<span className="text-[10px] font-normal text-[#737373]">/5</span>
+                {qEase}<span className="text-[10px] font-normal text-[#737373]">/5</span>
               </span>
             </div>
             <div
-              title={`${t.ratings.activity}: ${displayActivity}/5`}
+              title={`${t.ratings.activity}: ${qActivity}/5`}
               className="flex flex-col items-center justify-center py-1.5 px-1 rounded-[12px] bg-[#fafafa] border border-[#e5e5e5] shadow-2xs"
             >
               <span className="text-[10px] font-medium text-[#737373] tracking-tight">{t.ratings.activity}</span>
               <span className="text-[13px] font-semibold text-[#0a0a0a] leading-none mt-1">
-                {displayActivity}<span className="text-[10px] font-normal text-[#737373]">/5</span>
+                {qActivity}<span className="text-[10px] font-normal text-[#737373]">/5</span>
               </span>
             </div>
           </div>

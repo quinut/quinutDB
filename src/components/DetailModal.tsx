@@ -4,13 +4,10 @@ import {
   Download,
   X,
   Star,
-  MessageSquare,
   Send,
   Trash2,
   CheckCircle2,
   LogIn,
-  ChevronDown,
-  ChevronUp,
   ChevronLeft,
   ChevronRight,
   Image as ImageIcon,
@@ -84,6 +81,28 @@ const getActivityDesc = (score: number, lang: 'ko' | 'en') => {
   }
 };
 
+const getStarScoreLabel = (score: number, lang: 'ko' | 'en') => {
+  if (lang === 'en') {
+    switch (score) {
+      case 5: return '5★ Excellent';
+      case 4: return '4★ Good';
+      case 3: return '3★ Average';
+      case 2: return '2★ Poor';
+      case 1: return '1★ Terrible';
+      default: return `${score}★`;
+    }
+  }
+  switch (score) {
+    case 5: return '5점 (최고예요)';
+    case 4: return '4점 (좋아요)';
+    case 3: return '3점 (보통이에요)';
+    case 2: return '2점 (아쉬워요)';
+    case 1: return '1점 (별로예요)';
+    default: return `${score}점`;
+  }
+};
+
+
 export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose }) => {
   const { user, openAuthModal } = useAuth();
   const { language, t } = useLanguage();
@@ -91,24 +110,17 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
 
   const {
     stats,
-    myRating,
+    myReview,
     reviews,
-    submitRating,
-    submitReview,
-    deleteReview,
-    submittingRating,
-    submittingReview,
+    submitting,
+    submitUserScore,
+    deleteMyReview,
   } = useItemCommunity(itemId);
 
-  const [isVotingOpen, setIsVotingOpen] = useState(false);
-  const [voteAdoption, setVoteAdoption] = useState<ScoreValue>(5);
-  const [voteEase, setVoteEase] = useState<ScoreValue>(4);
-  const [voteActivity, setVoteActivity] = useState<ScoreValue>(4);
-  const [voteSubmitted, setVoteSubmitted] = useState(false);
-
+  const [selectedRating, setSelectedRating] = useState<ScoreValue>(5);
+  const [hoverRating, setHoverRating] = useState<number | null>(null);
   const [reviewContent, setReviewContent] = useState('');
-  const [reviewSubmitted, setReviewSubmitted] = useState(false);
-  const [reviewError, setReviewError] = useState<string | null>(null);
+  const [submitFeedback, setSubmitFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const [activeScreenshotIdx, setActiveScreenshotIdx] = useState(0);
 
@@ -125,40 +137,42 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
   }, [item?.id]);
 
   useEffect(() => {
-    if (myRating) {
-      setVoteAdoption(myRating.adoption);
-      setVoteEase(myRating.easeOfUse);
-      setVoteActivity(myRating.activity);
+    if (myReview) {
+      setSelectedRating(myReview.rating);
+      setReviewContent(myReview.content || '');
+    } else {
+      setSelectedRating(5);
+      setReviewContent('');
     }
-  }, [myRating]);
+  }, [myReview]);
 
-  const handleVoteSubmit = async () => {
+  const handleSubmitReview = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (!user) {
-      openAuthModal('점수 투표에 참여하려면 로그인이 필요합니다.');
+      openAuthModal(t.userScore.loginToRate);
       return;
     }
-    const { error } = await submitRating(voteAdoption, voteEase, voteActivity);
-    if (!error) {
-      setVoteSubmitted(true);
-      setTimeout(() => setVoteSubmitted(false), 3000);
+    setSubmitFeedback(null);
+    const { error } = await submitUserScore(selectedRating, reviewContent);
+    if (error) {
+      setSubmitFeedback({ type: 'error', text: error.message || 'Error submitting review' });
+    } else {
+      setSubmitFeedback({ type: 'success', text: t.userScore.successSubmit });
+      setTimeout(() => setSubmitFeedback(null), 3500);
     }
   };
 
-  const handleReviewSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user) {
-      openAuthModal('리뷰를 작성하려면 로그인이 필요합니다.');
-      return;
-    }
-    if (!reviewContent.trim()) return;
-    setReviewError(null);
-    const { error } = await submitReview(reviewContent);
+  const handleDeleteReview = async () => {
+    if (!user) return;
+    setSubmitFeedback(null);
+    const { error } = await deleteMyReview();
     if (error) {
-      setReviewError(error.message || '리뷰 등록에 실패했습니다.');
+      setSubmitFeedback({ type: 'error', text: error.message || 'Error deleting review' });
     } else {
+      setSelectedRating(5);
       setReviewContent('');
-      setReviewSubmitted(true);
-      setTimeout(() => setReviewSubmitted(false), 3000);
+      setSubmitFeedback({ type: 'success', text: t.userScore.successDelete });
+      setTimeout(() => setSubmitFeedback(null), 3500);
     }
   };
 
@@ -353,257 +367,104 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
               )}
             </div>
 
-            {/* Curation & Community Ratings (3-Category 1-5 Benchmark) */}
+            {/* qScore Curation Benchmark (3-Category 1-5 Benchmark) */}
             {item.ratings && (
               <div>
-                <div className="flex items-center justify-between mb-2.5">
+                <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-2">
-                    <h4 className="text-[11px] font-semibold uppercase tracking-wider text-[#737373]">
-                      {language === 'ko' ? '큐레이션 및 커뮤니티 평가' : 'Curation & Community Ratings'}
+                    <span className="rounded-[8px] bg-[#0a0a0a] text-[#ffffff] px-2 py-0.5 text-[10px] font-bold tracking-wide">
+                      qScore
+                    </span>
+                    <h4 className="text-[12px] font-semibold uppercase tracking-wider text-[#0a0a0a]">
+                      {t.qscore.title}
                     </h4>
-                    {stats && stats.voteCount > 0 ? (
-                      <span className="rounded-[18px] bg-[#0a0a0a] text-[#ffffff] px-2 py-0.2 text-[10px] font-medium">
-                        {language === 'ko' ? `커뮤니티 투표 ${stats.voteCount}명` : `Votes: ${stats.voteCount}`}
-                      </span>
-                    ) : (
-                      <span className="rounded-[18px] bg-[#f5f5f5] text-[#737373] border border-[#e5e5e5] px-2 py-0.2 text-[10px] font-medium">
-                        {language === 'ko' ? '큐레이션 기준 점수' : 'Curated Score'}
-                      </span>
-                    )}
                   </div>
                   <span className="text-[11px] text-[#737373]">
-                    {language === 'ko' ? '1–5 표준 척도' : '1–5 Benchmark'}
+                    {t.qscore.scale}
                   </span>
                 </div>
+                <p className="text-[11px] text-[#737373] mb-2.5">
+                  {t.qscore.desc}
+                </p>
 
-                {(() => {
-                  const hasCommunity = Boolean(stats && stats.voteCount > 0);
-                  const displayAdoption = hasCommunity ? stats!.avgAdoption : item.ratings.adoption;
-                  const displayEase = hasCommunity ? stats!.avgEaseOfUse : item.ratings.easeOfUse;
-                  const displayActivity = hasCommunity ? stats!.avgActivity : item.ratings.activity;
-
-                  return (
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                      {/* 1. Adoption */}
-                      <div className="flex flex-col justify-between p-3.5 rounded-[16px] border border-[#e5e5e5] bg-[#fafafa]">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[12px] font-medium text-[#737373]">{t.ratings.adoption}</span>
-                          <div className="flex items-baseline gap-0.5">
-                            <span className="text-[15px] font-bold text-[#0a0a0a]">
-                              {hasCommunity ? displayAdoption.toFixed(1) : displayAdoption}
-                            </span>
-                            <span className="text-[11px] text-[#737373]">/5</span>
-                          </div>
-                        </div>
-                        {/* 5-segment bar */}
-                        <div className="grid grid-cols-5 gap-1 my-2">
-                          {[1, 2, 3, 4, 5].map((s) => (
-                            <div
-                              key={s}
-                              className={`h-1.5 rounded-full ${
-                                s <= Math.round(displayAdoption) ? 'bg-[#0a0a0a]' : 'bg-[#e5e5e5]'
-                              }`}
-                            />
-                          ))}
-                        </div>
-                        <span className="text-[11px] text-[#171717] font-medium leading-tight">
-                          {getAdoptionDesc(Math.round(displayAdoption), language)}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  {/* 1. Adoption */}
+                  <div className="flex flex-col justify-between p-3.5 rounded-[16px] border border-[#e5e5e5] bg-[#fafafa]">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[12px] font-medium text-[#737373]">{t.ratings.adoption}</span>
+                      <div className="flex items-baseline gap-0.5">
+                        <span className="text-[15px] font-bold text-[#0a0a0a]">
+                          {item.ratings.adoption}
                         </span>
-                      </div>
-
-                      {/* 2. Ease of Use */}
-                      <div className="flex flex-col justify-between p-3.5 rounded-[16px] border border-[#e5e5e5] bg-[#fafafa]">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[12px] font-medium text-[#737373]">{t.ratings.easeOfUse}</span>
-                          <div className="flex items-baseline gap-0.5">
-                            <span className="text-[15px] font-bold text-[#0a0a0a]">
-                              {hasCommunity ? displayEase.toFixed(1) : displayEase}
-                            </span>
-                            <span className="text-[11px] text-[#737373]">/5</span>
-                          </div>
-                        </div>
-                        {/* 5-segment bar */}
-                        <div className="grid grid-cols-5 gap-1 my-2">
-                          {[1, 2, 3, 4, 5].map((s) => (
-                            <div
-                              key={s}
-                              className={`h-1.5 rounded-full ${
-                                s <= Math.round(displayEase) ? 'bg-[#0a0a0a]' : 'bg-[#e5e5e5]'
-                              }`}
-                            />
-                          ))}
-                        </div>
-                        <span className="text-[11px] text-[#171717] font-medium leading-tight">
-                          {getEaseOfUseDesc(Math.round(displayEase), language)}
-                        </span>
-                      </div>
-
-                      {/* 3. Activity */}
-                      <div className="flex flex-col justify-between p-3.5 rounded-[16px] border border-[#e5e5e5] bg-[#fafafa]">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[12px] font-medium text-[#737373]">{t.ratings.activity}</span>
-                          <div className="flex items-baseline gap-0.5">
-                            <span className="text-[15px] font-bold text-[#0a0a0a]">
-                              {hasCommunity ? displayActivity.toFixed(1) : displayActivity}
-                            </span>
-                            <span className="text-[11px] text-[#737373]">/5</span>
-                          </div>
-                        </div>
-                        {/* 5-segment bar */}
-                        <div className="grid grid-cols-5 gap-1 my-2">
-                          {[1, 2, 3, 4, 5].map((s) => (
-                            <div
-                              key={s}
-                              className={`h-1.5 rounded-full ${
-                                s <= Math.round(displayActivity) ? 'bg-[#0a0a0a]' : 'bg-[#e5e5e5]'
-                              }`}
-                            />
-                          ))}
-                        </div>
-                        <span className="text-[11px] text-[#171717] font-medium leading-tight">
-                          {getActivityDesc(Math.round(displayActivity), language)}
-                        </span>
+                        <span className="text-[11px] text-[#737373]">/5</span>
                       </div>
                     </div>
-                  );
-                })()}
-
-                {/* Interactive Voting Panel Accordion */}
-                <div className="mt-3 rounded-[18px] border border-[#e5e5e5] bg-[#fafafa] overflow-hidden">
-                  <button
-                    type="button"
-                    onClick={() => setIsVotingOpen(!isVotingOpen)}
-                    className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-[#f0f0f0] transition-colors cursor-pointer"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Star size={15} className={myRating ? "text-[#0a0a0a] fill-[#0a0a0a]" : "text-[#737373]"} />
-                      <span className="text-[13px] font-semibold text-[#0a0a0a]">
-                        {myRating
-                          ? (language === 'ko' ? '내 평가 점수 수정하기' : 'Edit My Rating')
-                          : (language === 'ko' ? '이 항목 평가 참여하기' : 'Vote & Rate this Item')}
-                      </span>
-                      {myRating && (
-                        <span className="rounded-[12px] bg-[#0a0a0a] text-[#ffffff] px-2 py-0.5 text-[10px] font-medium">
-                          {language === 'ko' ? '내 투표 완료' : 'Voted'}
-                        </span>
-                      )}
+                    <div className="grid grid-cols-5 gap-1 my-2">
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <div
+                          key={s}
+                          className={`h-1.5 rounded-full ${
+                            s <= item.ratings.adoption ? 'bg-[#0a0a0a]' : 'bg-[#e5e5e5]'
+                          }`}
+                        />
+                      ))}
                     </div>
-                    {isVotingOpen ? <ChevronUp size={16} className="text-[#737373]" /> : <ChevronDown size={16} className="text-[#737373]" />}
-                  </button>
+                    <span className="text-[11px] text-[#171717] font-medium leading-tight">
+                      {getAdoptionDesc(item.ratings.adoption, language)}
+                    </span>
+                  </div>
 
-                  {isVotingOpen && (
-                    <div className="p-4 border-t border-[#e5e5e5] bg-[#ffffff] flex flex-col gap-4">
-                      {voteSubmitted && (
-                        <div className="flex items-center gap-2 p-2.5 rounded-[12px] bg-[#f0fdf4] border border-[#bbf7d0] text-[#166534] text-[12px] font-medium">
-                          <CheckCircle2 size={15} />
-                          <span>{language === 'ko' ? '평가가 성공적으로 저장되었습니다.' : 'Rating successfully saved.'}</span>
-                        </div>
-                      )}
-
-                      {/* 1. Adoption Selection */}
-                      <div className="flex flex-col gap-1.5">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[12px] font-medium text-[#0a0a0a]">1. {t.ratings.adoption}</span>
-                          <span className="text-[12px] font-semibold text-[#0a0a0a]">
-                            {voteAdoption} - {getAdoptionDesc(voteAdoption, language)}
-                          </span>
-                        </div>
-                        <div className="grid grid-cols-5 gap-1.5">
-                          {([1, 2, 3, 4, 5] as ScoreValue[]).map((score) => (
-                            <button
-                              key={score}
-                              type="button"
-                              onClick={() => setVoteAdoption(score)}
-                              className={`h-9 rounded-[12px] text-[13px] font-semibold transition-all cursor-pointer border ${
-                                voteAdoption === score
-                                  ? 'bg-[#0a0a0a] text-[#ffffff] border-[#0a0a0a] shadow-xs'
-                                  : 'bg-[#fafafa] text-[#737373] border-[#e5e5e5] hover:border-[#0a0a0a] hover:text-[#0a0a0a]'
-                              }`}
-                            >
-                              {score}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* 2. Ease of Use Selection */}
-                      <div className="flex flex-col gap-1.5">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[12px] font-medium text-[#0a0a0a]">2. {t.ratings.easeOfUse}</span>
-                          <span className="text-[12px] font-semibold text-[#0a0a0a]">
-                            {voteEase} - {getEaseOfUseDesc(voteEase, language)}
-                          </span>
-                        </div>
-                        <div className="grid grid-cols-5 gap-1.5">
-                          {([1, 2, 3, 4, 5] as ScoreValue[]).map((score) => (
-                            <button
-                              key={score}
-                              type="button"
-                              onClick={() => setVoteEase(score)}
-                              className={`h-9 rounded-[12px] text-[13px] font-semibold transition-all cursor-pointer border ${
-                                voteEase === score
-                                  ? 'bg-[#0a0a0a] text-[#ffffff] border-[#0a0a0a] shadow-xs'
-                                  : 'bg-[#fafafa] text-[#737373] border-[#e5e5e5] hover:border-[#0a0a0a] hover:text-[#0a0a0a]'
-                              }`}
-                            >
-                              {score}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* 3. Activity Selection */}
-                      <div className="flex flex-col gap-1.5">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[12px] font-medium text-[#0a0a0a]">3. {t.ratings.activity}</span>
-                          <span className="text-[12px] font-semibold text-[#0a0a0a]">
-                            {voteActivity} - {getActivityDesc(voteActivity, language)}
-                          </span>
-                        </div>
-                        <div className="grid grid-cols-5 gap-1.5">
-                          {([1, 2, 3, 4, 5] as ScoreValue[]).map((score) => (
-                            <button
-                              key={score}
-                              type="button"
-                              onClick={() => setVoteActivity(score)}
-                              className={`h-9 rounded-[12px] text-[13px] font-semibold transition-all cursor-pointer border ${
-                                voteActivity === score
-                                  ? 'bg-[#0a0a0a] text-[#ffffff] border-[#0a0a0a] shadow-xs'
-                                  : 'bg-[#fafafa] text-[#737373] border-[#e5e5e5] hover:border-[#0a0a0a] hover:text-[#0a0a0a]'
-                              }`}
-                            >
-                              {score}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                        {!user ? (
-                          <button
-                            type="button"
-                            onClick={() => openAuthModal('점수 투표에 참여하려면 로그인이 필요합니다.')}
-                            className="inline-flex items-center gap-2 rounded-[18px] bg-[#0a0a0a] px-4 py-2 text-[13px] font-medium text-[#ffffff] hover:opacity-90 transition-opacity cursor-pointer"
-                          >
-                            <LogIn size={15} />
-                            <span>로그인하고 평가 저장</span>
-                          </button>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={handleVoteSubmit}
-                            disabled={submittingRating}
-                            className="inline-flex items-center gap-2 rounded-[18px] bg-[#0a0a0a] px-5 py-2 text-[13px] font-medium text-[#ffffff] hover:opacity-90 disabled:opacity-50 transition-opacity cursor-pointer"
-                          >
-                            {submittingRating ? '저장 중...' : myRating ? '내 평가 업데이트' : '평가 제출하기'}
-                          </button>
-                        )}
-                        <span className="text-[11px] text-[#737373]">
-                          {user ? '1인당 1개 아이템에 1개의 점수 기록이 유지됩니다' : '로그인 사용자만 투표 가능'}
+                  {/* 2. Ease of Use */}
+                  <div className="flex flex-col justify-between p-3.5 rounded-[16px] border border-[#e5e5e5] bg-[#fafafa]">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[12px] font-medium text-[#737373]">{t.ratings.easeOfUse}</span>
+                      <div className="flex items-baseline gap-0.5">
+                        <span className="text-[15px] font-bold text-[#0a0a0a]">
+                          {item.ratings.easeOfUse}
                         </span>
+                        <span className="text-[11px] text-[#737373]">/5</span>
                       </div>
                     </div>
-                  )}
+                    <div className="grid grid-cols-5 gap-1 my-2">
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <div
+                          key={s}
+                          className={`h-1.5 rounded-full ${
+                            s <= item.ratings.easeOfUse ? 'bg-[#0a0a0a]' : 'bg-[#e5e5e5]'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-[11px] text-[#171717] font-medium leading-tight">
+                      {getEaseOfUseDesc(item.ratings.easeOfUse, language)}
+                    </span>
+                  </div>
+
+                  {/* 3. Activity */}
+                  <div className="flex flex-col justify-between p-3.5 rounded-[16px] border border-[#e5e5e5] bg-[#fafafa]">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[12px] font-medium text-[#737373]">{t.ratings.activity}</span>
+                      <div className="flex items-baseline gap-0.5">
+                        <span className="text-[15px] font-bold text-[#0a0a0a]">
+                          {item.ratings.activity}
+                        </span>
+                        <span className="text-[11px] text-[#737373]">/5</span>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-5 gap-1 my-2">
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <div
+                          key={s}
+                          className={`h-1.5 rounded-full ${
+                            s <= item.ratings.activity ? 'bg-[#0a0a0a]' : 'bg-[#e5e5e5]'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-[11px] text-[#171717] font-medium leading-tight">
+                      {getActivityDesc(item.ratings.activity, language)}
+                    </span>
+                  </div>
                 </div>
               </div>
             )}
@@ -716,70 +577,176 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
                   </div>
                 )}
               </div>
-              {/* Community Reviews & Feedback Section */}
+              {/* userScore & Google Play Style Reviews Section */}
               <div>
                 <div className="flex items-center justify-between mb-2.5">
                   <div className="flex items-center gap-2">
-                    <h4 className="text-[11px] font-semibold uppercase tracking-wider text-[#737373]">
-                      {t.detail.reviews}
-                    </h4>
-                    <span className="rounded-[18px] bg-[#0a0a0a] px-2 py-0.2 text-[11px] font-medium text-[#fafafa]">
-                      {reviews.length}
+                    <span className="rounded-[8px] bg-[#f5f5f5] text-[#171717] border border-[#e5e5e5] px-2 py-0.5 text-[10px] font-bold tracking-wide">
+                      userScore
                     </span>
+                    <h4 className="text-[12px] font-semibold uppercase tracking-wider text-[#0a0a0a]">
+                      {t.userScore.title}
+                    </h4>
                   </div>
-                  <span className="text-[11px] text-[#737373]">
-                    {language === 'ko' ? '사용자 실사용 리뷰' : 'User Reviews'}
-                  </span>
+                  {stats && stats.totalRatings > 0 && (
+                    <span className="text-[11px] text-[#737373]">
+                      {t.userScore.ratingsCount.replace('{count}', String(stats.totalRatings))}
+                    </span>
+                  )}
                 </div>
 
-                <div className="rounded-[18px] bg-[#ffffff] p-4 border border-[#e5e5e5] shadow-2xs flex flex-col gap-3.5">
-                  {/* Review Write Form */}
-                  <form onSubmit={handleReviewSubmit} className="flex flex-col gap-2">
+                {/* Overall userScore Summary Hero Card */}
+                <div className="rounded-[18px] bg-[#ffffff] p-4 border border-[#e5e5e5] shadow-2xs mb-3 flex items-center justify-between">
+                  <div className="flex items-baseline gap-3">
+                    <span className="text-[32px] font-bold text-[#0a0a0a] leading-none tracking-tight">
+                      {stats && stats.totalRatings > 0 ? stats.avgUserScore.toFixed(1) : '—'}
+                    </span>
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-0.5 text-[#0a0a0a]">
+                        {[1, 2, 3, 4, 5].map((star) => {
+                          const score = stats && stats.totalRatings > 0 ? stats.avgUserScore : 0;
+                          return (
+                            <Star
+                              key={star}
+                              size={14}
+                              className={
+                                star <= Math.round(score)
+                                  ? 'fill-[#0a0a0a] text-[#0a0a0a]'
+                                  : 'text-[#d4d4d4]'
+                              }
+                            />
+                          );
+                        })}
+                      </div>
+                      <span className="text-[11px] text-[#737373] mt-0.5">
+                        {stats && stats.totalRatings > 0
+                          ? `${stats.totalRatings} ratings · ${stats.textReviewCount} reviews`
+                          : t.userScore.noRatings}
+                      </span>
+                    </div>
+                  </div>
+
+                  {myReview && (
+                    <span className="rounded-[12px] bg-[#0a0a0a] text-[#ffffff] px-2.5 py-1 text-[11px] font-medium shrink-0">
+                      ★ {myReview.rating}점 평가 완료
+                    </span>
+                  )}
+                </div>
+
+                {/* Rate & Review Form (Google Play Style) */}
+                <div className="rounded-[18px] bg-[#ffffff] p-4 border border-[#e5e5e5] shadow-2xs flex flex-col gap-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[12px] font-semibold text-[#0a0a0a]">
+                      {myReview ? t.userScore.updateReview : t.userScore.ratePrompt}
+                    </span>
+                    <span className="text-[11px] font-medium text-[#737373]">
+                      {getStarScoreLabel(hoverRating || selectedRating, language)}
+                    </span>
+                  </div>
+
+                  {/* 5-Star Interactive Selector */}
+                  <div className="flex items-center gap-1.5 py-0.5">
+                    {([1, 2, 3, 4, 5] as ScoreValue[]).map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => {
+                          if (!user) {
+                            openAuthModal(t.userScore.loginToRate);
+                            return;
+                          }
+                          setSelectedRating(star);
+                        }}
+                        onMouseEnter={() => setHoverRating(star)}
+                        onMouseLeave={() => setHoverRating(null)}
+                        aria-label={`${star} stars`}
+                        className="p-1 text-[#0a0a0a] hover:scale-110 active:scale-95 transition-all cursor-pointer"
+                      >
+                        <Star
+                          size={24}
+                          strokeWidth={2}
+                          className={
+                            star <= (hoverRating || selectedRating)
+                              ? 'fill-[#0a0a0a] text-[#0a0a0a]'
+                              : 'text-[#d4d4d4]'
+                          }
+                        />
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Optional Comment Textarea */}
+                  <form onSubmit={handleSubmitReview} className="flex flex-col gap-2">
                     <textarea
                       value={reviewContent}
                       onChange={(e) => setReviewContent(e.target.value)}
                       placeholder={
                         user
-                          ? (language === 'ko' ? '이 항목의 장단점, 실사용 팁, 세팅 노하우를 공유해 보세요...' : 'Share your experience, tips, or feedback...')
-                          : (language === 'ko' ? '리뷰를 작성하려면 먼저 로그인해 주세요...' : 'Sign in to write a review...')
+                          ? t.userScore.reviewOptionalPlaceholder
+                          : t.userScore.loginToRate
                       }
-                      rows={3}
+                      rows={2}
                       maxLength={1000}
-                      disabled={!user || submittingReview}
-                      className="w-full resize-none rounded-[14px] border border-[#e5e5e5] bg-[#fafafa] p-3 text-[13px] text-[#0a0a0a] placeholder-[#a3a3a3] focus:border-[#0a0a0a] focus:bg-[#ffffff] focus:outline-none transition-all disabled:opacity-60"
+                      disabled={!user || submitting}
+                      className="w-full resize-none rounded-[14px] border border-[#e5e5e5] bg-[#fafafa] p-3 text-[12px] text-[#0a0a0a] placeholder-[#a3a3a3] focus:border-[#0a0a0a] focus:bg-[#ffffff] focus:outline-none transition-all disabled:opacity-60"
                     />
 
-                    {reviewError && (
-                      <p className="text-[12px] text-red-600 font-medium px-1">{reviewError}</p>
-                    )}
-                    {reviewSubmitted && (
-                      <p className="inline-flex items-center gap-1 text-[12px] text-emerald-600 font-medium px-1">
-                        <CheckCircle2 size={14} />
-                        <span>{t.detail.reviewSuccess}</span>
+                    {submitFeedback && (
+                      <p
+                        className={`inline-flex items-center gap-1 text-[12px] font-medium px-1 ${
+                          submitFeedback.type === 'success' ? 'text-emerald-600' : 'text-rose-600'
+                        }`}
+                      >
+                        {submitFeedback.type === 'success' && <CheckCircle2 size={13} />}
+                        <span>{submitFeedback.text}</span>
                       </p>
                     )}
 
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] text-[#737373]">
-                        {reviewContent.length}/1000{language === 'ko' ? '자' : ''}
-                      </span>
+                    <div className="flex items-center justify-between pt-1">
+                      <div className="flex items-center gap-2">
+                        {myReview && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (window.confirm(language === 'ko' ? '평가를 삭제하시겠습니까?' : 'Delete your review?')) {
+                                handleDeleteReview();
+                              }
+                            }}
+                            disabled={submitting}
+                            title={t.userScore.deleteReview}
+                            className="inline-flex items-center gap-1 text-[11px] text-rose-600 hover:text-rose-700 hover:underline cursor-pointer disabled:opacity-40"
+                          >
+                            <Trash2 size={12} />
+                            <span>{t.userScore.deleteReview}</span>
+                          </button>
+                        )}
+                      </div>
+
                       {!user ? (
                         <button
                           type="button"
-                          onClick={() => openAuthModal(t.detail.loginToReview)}
+                          onClick={() => openAuthModal(t.userScore.loginToRate)}
                           className="inline-flex items-center gap-1.5 rounded-[18px] bg-[#0a0a0a] px-3.5 py-1.5 text-[12px] font-medium text-[#fafafa] hover:opacity-90 transition-opacity cursor-pointer"
                         >
                           <LogIn size={13} />
-                          <span>{language === 'ko' ? '로그인 후 작성' : 'Sign in to review'}</span>
+                          <span>{language === 'ko' ? '로그인 후 평가' : 'Sign in to rate'}</span>
                         </button>
                       ) : (
                         <button
                           type="submit"
-                          disabled={!reviewContent.trim() || submittingReview}
-                          className="inline-flex items-center gap-1.5 rounded-[18px] bg-[#0a0a0a] px-4 py-1.5 text-[12px] font-medium text-[#fafafa] hover:opacity-90 disabled:opacity-40 transition-opacity cursor-pointer"
+                          disabled={submitting}
+                          className="inline-flex items-center gap-1.5 rounded-[18px] bg-[#0a0a0a] px-4 py-1.5 text-[12px] font-medium text-[#fafafa] hover:opacity-90 disabled:opacity-40 transition-opacity cursor-pointer shadow-xs"
                         >
-                          <Send size={13} />
-                          <span>{submittingReview ? (language === 'ko' ? '등록 중...' : 'Submitting...') : (language === 'ko' ? '리뷰 등록' : 'Submit Review')}</span>
+                          <Send size={12} />
+                          <span>
+                            {submitting
+                              ? (language === 'ko' ? '저장 중...' : 'Saving...')
+                              : myReview
+                              ? t.userScore.updateReview
+                              : reviewContent.trim()
+                              ? t.userScore.submitReview
+                              : t.userScore.submitRatingOnly.replace('{rating}', String(selectedRating))}
+                          </span>
                         </button>
                       )}
                     </div>
@@ -789,7 +756,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
                   <div className="border-t border-[#e5e5e5] pt-3 flex flex-col gap-2.5 max-h-[220px] overflow-y-auto pr-1">
                     {reviews.length === 0 ? (
                       <div className="py-4 text-center text-[12px] text-[#737373]">
-                        {t.detail.noReviews}
+                        {t.userScore.noRatings}
                       </div>
                     ) : (
                       reviews.map((rev) => (
@@ -813,30 +780,40 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
                               <span className="text-[12px] font-semibold text-[#0a0a0a] truncate max-w-[120px]">
                                 {rev.username}
                               </span>
+                              {user && user.id === rev.userId && (
+                                <span className="rounded-[8px] bg-[#0a0a0a] text-[#ffffff] px-1.5 py-0.2 text-[9.5px] font-semibold">
+                                  {t.userScore.myRatingBadge}
+                                </span>
+                              )}
                               <span className="text-[10px] text-[#737373]">
                                 {new Date(rev.createdAt).toLocaleDateString()}
                               </span>
                             </div>
 
-                            {user && user.id === rev.userId && (
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  if (window.confirm('리뷰를 삭제하시겠습니까?')) {
-                                    deleteReview(rev.id);
+                            <div className="flex items-center gap-0.5 text-[#0a0a0a]">
+                              {[1, 2, 3, 4, 5].map((s) => (
+                                <Star
+                                  key={s}
+                                  size={11}
+                                  className={
+                                    s <= rev.rating
+                                      ? 'fill-[#0a0a0a] text-[#0a0a0a]'
+                                      : 'text-[#d4d4d4]'
                                   }
-                                }}
-                                title="내 리뷰 삭제"
-                                className="p-1 rounded-[8px] text-[#737373] hover:text-red-600 hover:bg-[#f5f5f5] transition-colors cursor-pointer"
-                              >
-                                <Trash2 size={13} />
-                              </button>
-                            )}
+                                />
+                              ))}
+                            </div>
                           </div>
 
-                          <p className="text-[12px] text-[#171717] whitespace-pre-wrap leading-relaxed">
-                            {rev.content}
-                          </p>
+                          {rev.content && rev.content.trim() ? (
+                            <p className="text-[12px] text-[#171717] whitespace-pre-wrap leading-relaxed">
+                              {rev.content}
+                            </p>
+                          ) : (
+                            <span className="text-[11px] text-[#a3a3a3] italic">
+                              {t.userScore.ratingOnlyNote}
+                            </span>
+                          )}
                         </div>
                       ))
                     )}
