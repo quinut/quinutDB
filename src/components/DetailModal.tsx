@@ -215,7 +215,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
       />
 
       {/* Modal Surface Container (2-Column Wide Blueprint, max-w-[1100px]) */}
-      <div className="relative w-full max-w-[1100px] max-h-[92vh] overflow-hidden rounded-[24px] border border-[#e5e5e5] bg-[#ffffff] shadow-[0_0_0_1px_rgba(23,23,23,0.06),0_12px_40px_rgba(0,0,0,0.14)] z-10 flex flex-col">
+      <div className="relative w-full max-w-[1100px] max-h-[92vh] lg:h-[88vh] overflow-hidden rounded-[24px] border border-[#e5e5e5] bg-[#ffffff] shadow-[0_0_0_1px_rgba(23,23,23,0.06),0_12px_40px_rgba(0,0,0,0.14)] z-10 flex flex-col">
         {/* ============================================================ */}
         {/* Top Header Bar with Big Accessible Close Button             */}
         {/* ============================================================ */}
@@ -263,13 +263,13 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
         </div>
 
         {/* ============================================================ */}
-        {/* 2-Column Split Content Body                                  */}
+        {/* 2-Column Split Content Body (Independent Column Scrolls)      */}
         {/* ============================================================ */}
-        <div className="flex-1 overflow-y-auto grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-[#e5e5e5]">
+        <div className="flex-1 min-h-0 overflow-y-auto lg:overflow-hidden grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-[#e5e5e5]">
           {/* ---------------------------------------------------------- */}
           {/* Left Column (col-span-7): UI Showcase & Specification     */}
           {/* ---------------------------------------------------------- */}
-          <div className="lg:col-span-7 p-6 sm:p-8 flex flex-col gap-6">
+          <div className="lg:col-span-7 lg:h-full lg:overflow-y-auto p-6 sm:p-8 flex flex-col gap-6">
             {/* Real UI Screenshot Gallery */}
             <div>
               <div className="flex items-center justify-between mb-2">
@@ -501,7 +501,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({ item, type, onClose })
           {/* ---------------------------------------------------------- */}
           {/* Right Column (col-span-5): Overview, Compatibility & Links */}
           {/* ---------------------------------------------------------- */}
-          <div className="lg:col-span-5 p-6 sm:p-8 flex flex-col justify-between gap-6 bg-[#fafafa]/50">
+          <div className="lg:col-span-5 lg:h-full lg:overflow-y-auto p-6 sm:p-8 flex flex-col justify-between gap-6 bg-[#fafafa]/50">
             <div className="flex flex-col gap-6">
               {/* Overview Narrative */}
               <div>
